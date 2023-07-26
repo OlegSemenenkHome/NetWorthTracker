@@ -17,7 +17,10 @@ interface AssetDao {
     suspend fun getAsset(name: String): Asset
 
     @Query("UPDATE asset SET balance = :newBalance WHERE `key` = :key")
-    suspend fun updateAsset(newBalance: String, key: String)
+    suspend fun updateAssetBalance(newBalance: String, key: String)
+
+    @Query("UPDATE asset SET value = :newValue WHERE `key` = :key")
+    suspend fun updateAssetValue(newValue: String, key: String)
 
     @Delete
     suspend fun deleteAsset(asset: Asset)

@@ -17,12 +17,15 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 private const val LOG_TAG = "HOMEVIEWMODEL"
+private const val ONE_MINUTE_IN_MILLIS = 60_000L
 
 internal class HomeScreenViewModel(
     private val assetDao: AssetDao,
     private val cryptoRepo: CryptoRepo = CryptoRepo(),
     private val stockRepo: StockRepo = StockRepo()
 ) : ViewModel(), KoinComponent {
+    private var lastTimeUpdated = System.currentTimeMillis()
+
     private var assetList = emptyList<ListAsset>()
 
     var filteredAssets by mutableStateOf(emptyList<ListAsset>())
@@ -41,6 +44,23 @@ internal class HomeScreenViewModel(
             assetDao.getAssets().collect {
                 userAssetList.clear()
                 userAssetList.addAll(it)
+                calculateTotalValue()
+            }
+        }
+    }
+
+    fun updateAssetValues() {
+        if (System.currentTimeMillis() - lastTimeUpdated >= ONE_MINUTE_IN_MILLIS) {
+            lastTimeUpdated = System.currentTimeMillis()
+            viewModelScope.launch {
+                userAssetList.forEach { asset ->
+                    val updatedAsset = if (asset.key.contains("false")) {
+                        cryptoRepo.getAsset(asset.apiName)
+                    } else {
+                        stockRepo.stockPriceLookup(asset)
+                    }
+                    assetDao.updateAssetValue(updatedAsset.value, updatedAsset.key)
+                }
             }
         }
     }
@@ -68,11 +88,6 @@ internal class HomeScreenViewModel(
     }
 
     fun onSearchQueryChanged(query: String) {
-        if (assetList.isEmpty()) {
-            viewModelScope.launch {
-                getRepoSupportedAssets()
-            }
-        }
         searchQuery = query
         if (query.length > 1) {
             viewModelScope.launch {

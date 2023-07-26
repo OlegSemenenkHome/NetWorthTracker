@@ -41,7 +41,6 @@ class StockRepo {
     suspend fun stockLookup(listAsset: ListAsset): Asset {
         val price = client.get(BASE_URL + "quote?symbol=${listAsset.symbol}&token=${apiKey}")
             .body<PriceResult>()
-        listAsset.symbol
         return Asset(
             key = listAsset.symbol + listAsset.isStock.toString(),
             name = listAsset.name,
@@ -50,6 +49,13 @@ class StockRepo {
             balance = "0",
             symbol = listAsset.symbol
         )
+    }
+
+    suspend fun stockPriceLookup(asset: Asset): Asset {
+        val price = client.get(BASE_URL + "quote?symbol=${asset.symbol}&token=${apiKey}")
+            .body<PriceResult>()
+        asset.value = price.c.toString()
+        return asset
     }
 
     private fun StockAsset.toListAsset(): ListAsset {

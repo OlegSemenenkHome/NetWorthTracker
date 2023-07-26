@@ -40,7 +40,7 @@ internal class AssetDetailViewModel(
     fun updateAsset(updatedBalance: String) {
         viewModelScope.launch {
             asset?.let {
-                assetDao.updateAsset(updatedBalance, it.key)
+                assetDao.updateAssetBalance(updatedBalance, it.key)
                 asset = assetDao.getAsset(it.name)
             }
         }

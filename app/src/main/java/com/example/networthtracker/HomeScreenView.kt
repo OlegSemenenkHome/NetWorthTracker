@@ -64,6 +64,8 @@ internal fun HomeScreenView(
         viewModel.calculateTotalValue()
     }
 
+    viewModel.updateAssetValues()
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.secondary

@@ -38,21 +38,22 @@ class CryptoRepo {
             val response =
                 client.get("${COINGEKO_API_V3 + assetName}?localization=false&tickers=true&market_data=false&community_data=false&developer_data=false&sparkline=false")
             return if (response.status.value == 200) {
-                mapToAsset(response.body())
+                mapToAsset(response.body(), assetName)
             } else {
                 throw Exception("Unable to make call, ${response.status.value} ")
             }
         }.getOrThrow<Asset>()
     }
 
-    private fun mapToAsset(asset: CryptoAsset): Asset {
+    private fun mapToAsset(asset: CryptoAsset, assetName: String): Asset {
         return Asset(
             key = asset.symbol + "false",
             name = asset.name,
             imageURL = asset.image.large,
             value = asset.tickers?.getOrNull(0)?.last.toString(),
             balance = "0",
-            symbol = asset.symbol
+            symbol = asset.symbol,
+            apiName = assetName
         )
     }
 }
