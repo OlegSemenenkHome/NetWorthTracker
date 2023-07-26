@@ -11,16 +11,14 @@ import org.koin.dsl.module
 
 class App : Application() {
 
-    private val database by lazy { AssetDatabase.getInstance(this) }
-
-    private val repoModule = module {
+    private val viewModelModule = module {
         viewModel { HomeScreenViewModel(get()) }
         viewModel { (state: SavedStateHandle) -> AssetDetailViewModel(state, get()) }
     }
 
     private val databaseModule =
         module {
-            single { database.getAssetDao() }
+            single { AssetDatabase.getInstance(this@App).getAssetDao() }
         }
 
     override fun onCreate() {
@@ -31,7 +29,7 @@ class App : Application() {
             modules(
                 listOf(
                     databaseModule,
-                    repoModule,
+                    viewModelModule,
                 )
             )
         }

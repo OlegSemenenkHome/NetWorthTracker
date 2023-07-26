@@ -162,7 +162,6 @@ internal fun HomeScreenView(
     }
 }
 
-
 @Composable
 @ExperimentalMaterial3Api
 internal fun AssetBlock(

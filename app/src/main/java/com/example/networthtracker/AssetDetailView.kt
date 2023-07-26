@@ -42,7 +42,6 @@ import org.koin.androidx.compose.getViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AssetDetailView(navController: NavHostController) {
-
     val viewModel: AssetDetailViewModel = getViewModel()
 
     var text by remember { mutableStateOf("") }
@@ -70,7 +69,6 @@ internal fun AssetDetailView(navController: NavHostController) {
                     }
                 )
             }) { paddingValues ->
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier

@@ -27,10 +27,10 @@ internal class HomeScreenViewModel(
 
     var filteredAssets by mutableStateOf(emptyList<ListAsset>())
 
+    val userAssetList = mutableStateListOf<Asset>()
+
     var totalValue: Double by mutableDoubleStateOf(0.0)
         private set
-
-    val userAssetList = mutableStateListOf<Asset>()
 
     var searchQuery: String by mutableStateOf("")
         private set
