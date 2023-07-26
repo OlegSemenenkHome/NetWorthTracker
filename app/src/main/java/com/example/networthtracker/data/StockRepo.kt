@@ -6,13 +6,11 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import com.example.networthtracker.BuildConfig
+import com.example.networthtracker.data.room.Asset
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.serialization.Serializable
 
 private const val BASE_URL = "https://finnhub.io/api/v1/"
-private const val ALL_STOCKS_ENDPOINT = "stock/symbol?exchange=US&token="
-
 
 class StockRepo {
     private val apiKey = BuildConfig.API_KEY
@@ -29,7 +27,7 @@ class StockRepo {
 
     suspend fun getAllStocks(): List<ListAsset> {
         return runCatching {
-            val response = client.get(BASE_URL + ALL_STOCKS_ENDPOINT + apiKey)
+            val response = client.get(BASE_URL + "stock/symbol?exchange=US&token=" + apiKey)
             return if (response.status.value == 200) {
                 response.body<List<StockAsset>>().map {
                     it.toListAsset()
@@ -63,14 +61,3 @@ class StockRepo {
         )
     }
 }
-
-@Serializable
-data class StockAsset(
-    var description: String,
-    var displaySymbol: String,
-)
-
-@Serializable
-data class PriceResult(
-    var c: Double,
-)

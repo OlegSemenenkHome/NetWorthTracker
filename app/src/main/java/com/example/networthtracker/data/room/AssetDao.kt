@@ -1,4 +1,4 @@
-package com.example.networthtracker.data
+package com.example.networthtracker.data.room
 
 import androidx.room.Dao
 import androidx.room.Delete

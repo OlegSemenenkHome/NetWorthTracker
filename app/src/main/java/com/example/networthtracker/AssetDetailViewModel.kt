@@ -6,39 +6,42 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.networthtracker.data.Asset
-import com.example.networthtracker.data.AssetRepo
+import com.example.networthtracker.data.room.Asset
+import com.example.networthtracker.data.room.AssetDao
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 internal class AssetDetailViewModel(
     savedStateHandle: SavedStateHandle,
-    private val assetRepo: AssetRepo
+    private val assetDao: AssetDao
 ) : ViewModel(), KoinComponent {
     var asset: Asset? by mutableStateOf(null)
 
     init {
         viewModelScope.launch {
-            asset = assetRepo.getAsset(savedStateHandle.get<String>("assetName").orEmpty())
+            asset = assetDao.getAsset(savedStateHandle.get<String>("assetName").orEmpty())
         }
     }
 
     fun getAssetTotalValue(): String {
-        return asset?.balance?.toDouble()?.let { asset?.value?.trim()?.toDouble()?.times(it) }
-            .toString()
+        return asset?.run {
+            val balanceValue = balance.toDouble()
+            val assetValue = value.toDouble()
+            (balanceValue * assetValue).toString().trimToNearestThousandth()
+        } ?: "0"
     }
 
     fun deleteAsset() {
         viewModelScope.launch {
-            asset?.let { assetRepo.deleteAsset(it) }
+            asset?.let { assetDao.deleteAsset(it) }
         }
     }
 
     fun updateAsset(updatedBalance: String) {
         viewModelScope.launch {
             asset?.let {
-                assetRepo.updateAsset(updatedBalance, it.key)
-                asset = assetRepo.getAsset(it.name)
+                assetDao.updateAsset(updatedBalance, it.key)
+                asset = assetDao.getAsset(it.name)
             }
         }
     }

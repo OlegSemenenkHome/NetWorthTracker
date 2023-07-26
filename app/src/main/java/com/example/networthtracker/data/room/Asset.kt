@@ -1,4 +1,4 @@
-package com.example.networthtracker.data
+package com.example.networthtracker.data.room
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

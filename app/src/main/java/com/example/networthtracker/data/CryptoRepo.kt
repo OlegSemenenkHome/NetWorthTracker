@@ -1,12 +1,12 @@
 package com.example.networthtracker.data
 
+import com.example.networthtracker.data.room.Asset
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 private const val COINGEKO_API_V3 = "https://api.coingecko.com/api/v3/coins/"
@@ -56,31 +56,3 @@ class CryptoRepo {
         )
     }
 }
-
-@Serializable
-data class ListAsset(
-    val id: String,
-    val symbol: String,
-    val name: String,
-    val isStock: Boolean = false
-)
-
-@Serializable
-data class CryptoAsset(
-    val symbol: String,
-    val name: String,
-    val image: ImageLinks,
-    val tickers: List<Ticker>?,
-)
-
-@Serializable
-data class ImageLinks(
-    val thumb: String,
-    val small: String,
-    val large: String,
-)
-
-@Serializable
-data class Ticker(
-    val last: Double,
-)

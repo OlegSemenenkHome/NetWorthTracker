@@ -17,15 +17,15 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = Color.DarkGray,
-    tertiary = Pink80
+    primary = Color(0xFF14206B),
+    secondary = Color(0xFF3F51B5),
+    tertiary = Color(0xFF03A9F4)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = Color.DarkGray,
-    tertiary = Pink40
+    primary = Color(0xFF14206B),
+    secondary = Color(0xFF3F51B5),
+    tertiary = Color(0xFF03A9F4),
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -47,8 +47,7 @@ fun NetWorthTrackerTheme(
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) DarkColorScheme else LightColorScheme
         }
 
         darkTheme -> DarkColorScheme

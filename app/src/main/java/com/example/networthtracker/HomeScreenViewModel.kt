@@ -1,38 +1,44 @@
 package com.example.networthtracker
 
+import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.networthtracker.data.Asset
-import com.example.networthtracker.data.AssetRepo
+import com.example.networthtracker.data.room.Asset
+import com.example.networthtracker.data.room.AssetDao
 import com.example.networthtracker.data.ListAsset
 import com.example.networthtracker.data.CryptoRepo
 import com.example.networthtracker.data.StockRepo
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
+private const val LOG_TAG = "HOMEVIEWMODEL"
+
 internal class HomeScreenViewModel(
-    private val assetRepo: AssetRepo,
+    private val assetDao: AssetDao,
     private val cryptoRepo: CryptoRepo = CryptoRepo(),
     private val stockRepo: StockRepo = StockRepo()
 ) : ViewModel(), KoinComponent {
-    private var assetList by mutableStateOf(emptyList<ListAsset>())
+    private var assetList = emptyList<ListAsset>()
 
     var filteredAssets by mutableStateOf(emptyList<ListAsset>())
 
-    var userAssetList = mutableStateListOf<Asset>()
+    var totalValue: Double by mutableDoubleStateOf(0.0)
+        private set
+
+    val userAssetList = mutableStateListOf<Asset>()
 
     var searchQuery: String by mutableStateOf("")
         private set
 
     init {
         viewModelScope.launch {
-
             getRepoSupportedAssets()
-            assetRepo.allAssets.collect {
+            assetDao.getAssets().collect {
                 userAssetList.clear()
                 userAssetList.addAll(it)
             }
@@ -41,8 +47,8 @@ internal class HomeScreenViewModel(
 
     fun onAssetSelected(name: String) {
         viewModelScope.launch {
-            filteredAssets.forEach {
-                try {
+            runCatching {
+                filteredAssets.forEach {
                     if (it.name == name) {
                         if (it.isStock) {
                             addStockAsset(it)
@@ -50,24 +56,23 @@ internal class HomeScreenViewModel(
                             addCryptoAsset(it)
                         }
                     }
-                } catch (e: Exception) {
-                    throw e
                 }
-            }
+            }.onFailure { Log.e(LOG_TAG, ("Unable to select asset " + it.message)) }
         }
     }
 
-    private fun getRepoSupportedAssets() {
-        try {
-            viewModelScope.launch {
-                assetList = cryptoRepo.getSupportedCryptoAssets() + stockRepo.getAllStocks()
-            }
-        } catch (e: Exception) {
-            println("Unable to get Data $e")
-        }
+    private suspend fun getRepoSupportedAssets() {
+        runCatching {
+            assetList = cryptoRepo.getSupportedCryptoAssets() + stockRepo.getAllStocks()
+        }.onFailure { Log.e(LOG_TAG, ("Unable to get supported assets " + it.message)) }
     }
 
     fun onSearchQueryChanged(query: String) {
+        if (assetList.isEmpty()) {
+            viewModelScope.launch {
+                getRepoSupportedAssets()
+            }
+        }
         searchQuery = query
         if (query.length > 1) {
             viewModelScope.launch {
@@ -78,15 +83,15 @@ internal class HomeScreenViewModel(
 
     private suspend fun addCryptoAsset(listAsset: ListAsset) {
         val cryptoAsset = cryptoRepo.getAsset(listAsset.id)
-        if (!userAssetList.contains(cryptoAsset)) {
-            assetRepo.insertAsset(cryptoAsset)
+        if (cryptoAsset !in userAssetList) {
+            assetDao.insertAsset(cryptoAsset)
         }
     }
 
     private suspend fun addStockAsset(asset: ListAsset) {
         val stockAsset = stockRepo.stockLookup(asset)
-        if (!userAssetList.contains(stockAsset)) {
-            assetRepo.insertAsset(stockAsset)
+        if (stockAsset !in userAssetList) {
+            assetDao.insertAsset(stockAsset)
         }
     }
 
@@ -95,11 +100,17 @@ internal class HomeScreenViewModel(
         filteredAssets = emptyList()
     }
 
+    fun calculateTotalValue() {
+        totalValue = userAssetList.sumOf { asset ->
+            asset.value.toDouble() * asset.balance.toDouble()
+        }
+    }
+
     private fun getFilteredAssets(
         query: String,
-        cryptoListAsset: List<ListAsset>,
+        listAssets: List<ListAsset>,
     ): List<ListAsset> {
         if (query.isEmpty()) return emptyList()
-        return cryptoListAsset.filter { it.name.lowercase().startsWith(query.lowercase()) }
+        return listAssets.filter { it.name.lowercase().startsWith(query.lowercase()) }
     }
 }

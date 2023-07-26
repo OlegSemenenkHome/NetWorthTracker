@@ -1,7 +1,8 @@
 package com.example.networthtracker
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -10,8 +11,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -71,11 +72,11 @@ internal fun AssetDetailView(navController: NavHostController) {
             }) { paddingValues ->
 
             Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxWidth()
             ) {
-
                 if (isTextFieldVisible) {
                     Text(
                         text = "Update Balance",
@@ -102,24 +103,65 @@ internal fun AssetDetailView(navController: NavHostController) {
                             .focusRequester(focusRequester)
                             .onGloballyPositioned { focusRequester.requestFocus() },
                     )
-                }
+                } else {
+                    viewModel.asset?.name?.let { name ->
+                        Text(
+                            text = name,
+                            fontSize = if (name.length > 20) 20.sp
+                            else 30.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.padding(20.dp))
+                    Text(
+                        text = "Value: ${viewModel.asset?.value?.trimToNearestThousandth()}",
+                        fontSize = 30.sp
+                    )
 
-                Spacer(modifier = Modifier.padding(20.dp))
-                Text(text = "Asset Balance: ${viewModel.asset?.balance}")
-                Text(text = "Asset Value: ${viewModel.asset?.value}")
-                Text(text = "Total User Asset Value: ${viewModel.getAssetTotalValue()} ")
-                IconButton(onClick = {
-                    viewModel.deleteAsset()
-                    navController.navigateUp()
-                }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    Text(
+                        text = "Balance: ${viewModel.asset?.balance}",
+                        fontSize = 30.sp
+                    )
+
+                    Text(
+                        text = "Total Value: ${viewModel.getAssetTotalValue()} ",
+                        fontSize = 25.sp
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = {
+                                viewModel.deleteAsset()
+                                navController.navigateUp()
+                            },
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Text(
+                                text = "Remove Asset",
+                                color = Color.White
+                            )
+                        }
+
+                        Button(
+                            enabled = !isTextFieldVisible,
+                            onClick = {
+                                viewModel.asset?.let {
+                                    isTextFieldVisible = !isTextFieldVisible
+                                }
+                            },
+                            modifier = Modifier.padding(20.dp)
+                        )
+                        {
+                            Text(
+                                text = "Update Balance",
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
-                IconButton(onClick = {
-                    viewModel.asset?.let { isTextFieldVisible = !isTextFieldVisible }
-                })
-                { Icon(Icons.Default.Build, contentDescription = "Delete") }
             }
         }
     }

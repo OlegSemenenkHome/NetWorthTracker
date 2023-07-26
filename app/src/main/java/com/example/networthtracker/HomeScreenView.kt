@@ -1,7 +1,8 @@
 package com.example.networthtracker
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,12 +23,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,13 +35,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SearchBar
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -50,12 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import okhttp3.internal.trimSubstring
+import com.example.networthtracker.data.room.Asset
 import org.koin.androidx.compose.getViewModel
-import java.math.BigDecimal
-import java.math.RoundingMode
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun HomeScreenView(
     navController: NavController,
@@ -65,21 +60,13 @@ internal fun HomeScreenView(
 
     var active by rememberSaveable { mutableStateOf(false) }
 
-    val totalValue: Double by remember {
-        derivedStateOf {
-            var newTotalValue = 0.0
-            viewModel.userAssetList.forEach { asset ->
-                val value = asset.balance.toDouble()
-                    .let { asset.value.toDouble().times(it) }
-                newTotalValue += value
-            }
-            newTotalValue
-        }
+    LaunchedEffect(viewModel.userAssetList) {
+        viewModel.calculateTotalValue()
     }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.secondary
     ) {
         Scaffold(
             topBar = {
@@ -91,78 +78,82 @@ internal fun HomeScreenView(
                         IconButton(onClick = { active = true }) {
                             Icon(Icons.Default.Add, contentDescription = "Search")
                         }
+
                     }
                 )
-            },
-        ) { paddingValues ->
-            if (active) {
-                SearchBar(
-                    query = viewModel.searchQuery,
-                    onQueryChange = viewModel::onSearchQueryChanged,
-                    onSearch = {
-                        viewModel.onAssetSelected(it)
-                        active = false
-                    },
-                    active = active,
-                    onActiveChange = { active = it },
-                    placeholder = { Text("Look up asset") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                if (active) {
+                    SearchBar(
+                        query = viewModel.searchQuery,
+                        onQueryChange = viewModel::onSearchQueryChanged,
+                        onSearch = {
+                            viewModel.onAssetSelected(it)
+                            active = false
+                        },
+                        active = active,
+                        onActiveChange = { active = it },
+                        placeholder = { Text("Look up asset") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
                     ) {
-                        items(viewModel.filteredAssets) { item ->
-                            ListItem(
-                                headlineContent = { Text(text = item.name) },
-                                modifier = Modifier.clickable {
-                                    viewModel.onAssetSelected(item.name)
-                                    active = false
-                                    viewModel.clearQuery()
-                                })
-                        }
-                    }
-                }
-            } else {
-                if (viewModel.userAssetList.isEmpty()) {
-                    Text(text = "No Assets Added")
-                } else {
-                    Column {
                         LazyColumn(
-                            modifier = Modifier
-                                .padding(paddingValues)
-                                .weight(3f),
-                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            items(viewModel.userAssetList) { asset ->
-                                AssetBlock(
-                                    symbol = asset.symbol,
-                                    icon = asset.imageURL,
-                                    name = asset.name,
-                                    assetValue = asset.value,
-                                    onCardClicked = { navController.navigate(route = "assetDetail/${asset.name}") }
+                            items(viewModel.filteredAssets) { item ->
+                                ListItem(
+                                    headlineContent = { Text(text = item.name) },
+                                    modifier = Modifier
+                                        .clickable {
+                                            viewModel.onAssetSelected(item.name)
+                                            active = false
+                                            viewModel.clearQuery()
+                                        }
+                                        .animateItemPlacement()
                                 )
                             }
                         }
+                    }
+                }
+            },
+            bottomBar = {
+                Column(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(vertical = 30.dp)
+                        .fillMaxWidth()
 
-                        Text(
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            text = "Total Portfolio Value:",
-                            modifier = Modifier
-                                .padding(top = 20.dp)
-                                .fillMaxWidth()
-                                .weight(.25f)
+                ) {
+                    Text(
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        text = "Total Portfolio Value",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
 
-                        )
-                        Text(
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            text = trimToNearestThousandth(totalValue.toString()),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(.25f)
+                    Text(
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        text = "$" + viewModel.totalValue.toString().trimToNearestThousandth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+            }
+        ) { paddingValues ->
+            if (viewModel.userAssetList.isEmpty()) {
+                Text(text = "No Assets Added")
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    items(viewModel.userAssetList) { asset ->
+                        AssetBlock(
+                            asset,
+                            onCardClicked = { navController.navigate(route = "assetDetail/${asset.name}") }
                         )
                     }
                 }
@@ -175,26 +166,23 @@ internal fun HomeScreenView(
 @Composable
 @ExperimentalMaterial3Api
 internal fun AssetBlock(
-    icon: String,
-    name: String,
-    assetValue: String,
+    asset: Asset,
     onCardClicked: () -> Unit,
-    symbol: String
 ) {
     OutlinedCard(
         shape = RoundedCornerShape(10),
-        onClick = { onCardClicked() },
+        onClick = onCardClicked,
         modifier = Modifier
-            .height(150.dp),
-    ) {
+            .height(120.dp),
+
+        ) {
         ListItem(
             leadingContent = {
-                if (icon.isNotBlank()) {
+                if (asset.imageURL.isNotBlank()) {
                     AsyncImage(
-                        model = icon, contentDescription = null,
+                        model = asset.imageURL, contentDescription = null,
                         modifier = Modifier
-                            .height(100.dp)
-                            .width(100.dp)
+                            .size(100.dp)
                             .padding(
                                 start = 10.dp,
                                 end = 20.dp
@@ -203,12 +191,12 @@ internal fun AssetBlock(
                     )
                 } else {
                     Text(
-                        text = symbol,
+                        text = asset.symbol,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .height(100.dp)
                             .width(100.dp)
-                            .padding(top = 15.dp)
+                            .padding(top = 10.dp)
                             .clip(CircleShape)
                             .border(BorderStroke(3.dp, Color.White))
                             .padding(top = 30.dp)
@@ -216,20 +204,16 @@ internal fun AssetBlock(
                 }
             },
             headlineContent = {
-                val nameLength = if (name.length > 20)
-                    20 else {
-                    name.length
-                }
                 Text(
-                    fontSize = 24.sp,
-                    text = name.trimSubstring(0, nameLength),
-                    modifier = Modifier.weight(1f)
+                    fontSize = if (asset.name.length > 20) 16.sp
+                    else 22.sp,
+                    text = asset.name,
                 )
             },
             trailingContent = {
                 Text(
-                    fontSize = 15.sp,
-                    text = trimToNearestThousandth(assetValue)
+                    fontSize = 20.sp,
+                    text = "$" + asset.value.trimToNearestThousandth()
                 )
             }
         )
@@ -241,14 +225,7 @@ internal fun AssetBlock(
 @Composable
 internal fun AssetBlockPreview() {
     AssetBlock(
-        icon = "",
-        name = "BTC",
-        assetValue = "20000",
+        asset = Asset("BTC", "Bitcoin", "", "1000", "0", "BTC"),
         onCardClicked = {},
-        symbol = "BTC"
     )
-}
-
-fun trimToNearestThousandth(value: String): String {
-    return BigDecimal(value.toDouble()).setScale(3, RoundingMode.HALF_UP).toString()
 }
