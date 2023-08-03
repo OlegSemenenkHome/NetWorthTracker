@@ -13,7 +13,10 @@ import com.example.networthtracker.data.room.AssetDao
 import com.example.networthtracker.data.ListAsset
 import com.example.networthtracker.data.CryptoRepo
 import com.example.networthtracker.data.StockRepo
+import com.example.networthtracker.data.room.AssetType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
 private const val LOG_TAG = "HOMEVIEWMODEL"
@@ -22,7 +25,7 @@ private const val ONE_MINUTE_IN_MILLIS = 60_000L
 internal class HomeScreenViewModel(
     private val assetDao: AssetDao,
     private val cryptoRepo: CryptoRepo = CryptoRepo(),
-    private val stockRepo: StockRepo = StockRepo()
+    private val stockRepo: StockRepo = StockRepo(),
 ) : ViewModel(), KoinComponent {
     private var lastTimeUpdated = System.currentTimeMillis()
 
@@ -39,28 +42,38 @@ internal class HomeScreenViewModel(
         private set
 
     init {
+        refreshPage()
         viewModelScope.launch {
             getRepoSupportedAssets()
-            assetDao.getAssets().collect {
-                userAssetList.clear()
-                userAssetList.addAll(it)
-                calculateTotalValue()
-            }
+        }
+    }
+
+    fun refreshPage() {
+        viewModelScope.launch {
+            assetDao.getAssets()
+                .collect {
+                    userAssetList.clear()
+                    userAssetList.addAll(it)
+                    calculateTotalValue()
+                }
         }
     }
 
     fun updateAssetValues() {
         if (System.currentTimeMillis() - lastTimeUpdated >= ONE_MINUTE_IN_MILLIS) {
-            lastTimeUpdated = System.currentTimeMillis()
-            viewModelScope.launch {
-                userAssetList.forEach { asset ->
-                    val updatedAsset = if (asset.key.contains("false")) {
-                        cryptoRepo.getAsset(asset.apiName)
-                    } else {
-                        stockRepo.stockPriceLookup(asset)
+            runCatching {
+                lastTimeUpdated = System.currentTimeMillis()
+                viewModelScope.launch {
+                    userAssetList.forEach { asset ->
+                        val updatedAsset = if (asset.assetType == AssetType.CRYPTO) {
+                            cryptoRepo.getAsset(asset.apiName)
+                        } else {
+                            stockRepo.stockPriceLookup(asset)
+                        }
+                        assetDao.updateAssetValue(updatedAsset.value, updatedAsset.key)
                     }
-                    assetDao.updateAssetValue(updatedAsset.value, updatedAsset.key)
                 }
+            }.onFailure { //TODO MAKE ERROR STATE }
             }
         }
     }
@@ -70,7 +83,7 @@ internal class HomeScreenViewModel(
             runCatching {
                 filteredAssets.forEach {
                     if (it.name == name) {
-                        if (it.isStock) {
+                        if (it.assetType == AssetType.STOCK) {
                             addStockAsset(it)
                         } else {
                             addCryptoAsset(it)
@@ -91,7 +104,9 @@ internal class HomeScreenViewModel(
         searchQuery = query
         if (query.length > 1) {
             viewModelScope.launch {
-                filteredAssets = getFilteredAssets(query, assetList)
+                withContext(Dispatchers.Default) {
+                    filteredAssets = getFilteredAssets(query, assetList)
+                }
             }
         }
     }

@@ -7,12 +7,18 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import com.example.networthtracker.BuildConfig
 import com.example.networthtracker.data.room.Asset
+import com.example.networthtracker.data.room.AssetType
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val BASE_URL = "https://finnhub.io/api/v1/"
 
-class StockRepo {
+class StockRepo(
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) {
     private val apiKey = BuildConfig.API_KEY
 
     private val client = HttpClient(OkHttp) {
@@ -26,36 +32,41 @@ class StockRepo {
     }
 
     suspend fun getAllStocks(): List<ListAsset> {
-        return runCatching {
+        return withContext(ioDispatcher) {
             val response = client.get(BASE_URL + "stock/symbol?exchange=US&token=" + apiKey)
-            return if (response.status.value == 200) {
+            if (response.status.value == 200) {
                 response.body<List<StockAsset>>().map {
                     it.toListAsset()
                 }
             } else {
                 throw Exception("Unable to make call, ${response.status.value} ")
             }
-        }.getOrThrow<List<ListAsset>>()
+        }
     }
 
     suspend fun stockLookup(listAsset: ListAsset): Asset {
-        val price = client.get(BASE_URL + "quote?symbol=${listAsset.symbol}&token=${apiKey}")
-            .body<PriceResult>()
-        return Asset(
-            key = listAsset.symbol + listAsset.isStock.toString(),
-            name = listAsset.name,
-            imageURL = "",
-            value = price.c.toString(),
-            balance = "0",
-            symbol = listAsset.symbol
-        )
+        return withContext(ioDispatcher) {
+            val price = client.get(BASE_URL + "quote?symbol=${listAsset.symbol}&token=${apiKey}")
+                .body<PriceResult>()
+            Asset(
+                key = listAsset.symbol + listAsset.assetType,
+                name = listAsset.name,
+                imageURL = "",
+                value = price.c.toString(),
+                balance = "0",
+                symbol = listAsset.symbol,
+                assetType = AssetType.STOCK
+            )
+        }
     }
 
     suspend fun stockPriceLookup(asset: Asset): Asset {
-        val price = client.get(BASE_URL + "quote?symbol=${asset.symbol}&token=${apiKey}")
-            .body<PriceResult>()
-        asset.value = price.c.toString()
-        return asset
+        return withContext(ioDispatcher) {
+            val price = client.get(BASE_URL + "quote?symbol=${asset.symbol}&token=${apiKey}")
+                .body<PriceResult>()
+            asset.value = price.c.toString()
+            asset
+        }
     }
 
     private fun StockAsset.toListAsset(): ListAsset {
@@ -63,7 +74,7 @@ class StockRepo {
             id = this.displaySymbol,
             name = this.description,
             symbol = this.displaySymbol,
-            isStock = true
+            assetType = AssetType.STOCK
         )
     }
 }

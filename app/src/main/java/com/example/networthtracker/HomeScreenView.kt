@@ -35,19 +35,25 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SearchBar
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.networthtracker.data.room.Asset
+import com.example.networthtracker.data.room.AssetType
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -62,6 +68,22 @@ internal fun HomeScreenView(
 
     LaunchedEffect(viewModel.userAssetList) {
         viewModel.calculateTotalValue()
+    }
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val lifecycleObserver = remember {
+        LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshPage()
+            }
+        }
+    }
+
+    DisposableEffect(lifecycle) {
+        lifecycle.addObserver(lifecycleObserver)
+        onDispose {
+            lifecycle.removeObserver(lifecycleObserver)
+        }
     }
 
     viewModel.updateAssetValues()
@@ -226,7 +248,7 @@ internal fun AssetBlock(
 @Composable
 internal fun AssetBlockPreview() {
     AssetBlock(
-        asset = Asset("BTC", "Bitcoin", "", "1000", "0", "BTC"),
+        asset = Asset("BTC", "Bitcoin", "", "1000", "0", "BTC", "", AssetType.CRYPTO),
         onCardClicked = {},
     )
 }

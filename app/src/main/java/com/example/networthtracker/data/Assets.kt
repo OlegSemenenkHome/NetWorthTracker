@@ -1,5 +1,6 @@
 package com.example.networthtracker.data
 
+import com.example.networthtracker.data.room.AssetType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -7,7 +8,7 @@ data class ListAsset(
     val id: String,
     val symbol: String,
     val name: String,
-    val isStock: Boolean = false
+    val assetType: AssetType = AssetType.CRYPTO,
 )
 
 @Serializable

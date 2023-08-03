@@ -63,6 +63,10 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
+    // Ktor dependencies for testing
+    testImplementation "io.ktor:ktor-client-mock:$ktor_version"
+
+
     // M3
     implementation "androidx.compose.material3:material3:1.2.0-alpha03"
     implementation "androidx.compose.material3:material3-window-size-class:1.1.1"
@@ -91,6 +95,10 @@ dependencies {
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
 
+    // Graph API
+    implementation "com.patrykandpatrick.vico:compose:1.6.5"
+    implementation "com.patrykandpatrick.vico:compose-m3:1.6.5"
+    implementation "com.patrykandpatrick.vico:core:1.6.5"
 
     //Testing
     testImplementation 'junit:junit:4.13.2'
