@@ -1,4 +1,4 @@
-package com.networthtracker.app.presentation
+package com.networthtracker.presentation
 
 import java.math.BigDecimal
 import java.math.RoundingMode

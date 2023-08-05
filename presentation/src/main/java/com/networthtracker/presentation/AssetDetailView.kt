@@ -38,7 +38,6 @@ import org.koin.androidx.compose.getViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.networthtracker.app.presentation.trimToNearestThousandth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +91,9 @@ fun AssetDetailView(navController: NavHostController) {
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 isTextFieldVisible = false
-                                viewModel.updateAsset(text)
+                                if (text.matches(Regex("[0-9 ]+"))) {
+                                    viewModel.updateAsset(text)
+                                }
                             }
                         ),
                         modifier = Modifier
@@ -164,3 +165,4 @@ fun AssetDetailView(navController: NavHostController) {
         }
     }
 }
+

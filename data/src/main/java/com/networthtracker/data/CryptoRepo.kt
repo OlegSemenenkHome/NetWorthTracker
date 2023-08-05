@@ -15,7 +15,9 @@ import kotlinx.serialization.json.Json
 
 private const val COINGEKO_API_V3 = "https://api.coingecko.com/api/v3/coins/"
 
-class CryptoRepo(private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO) {
+class CryptoRepo(
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
     private val client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json(Json {

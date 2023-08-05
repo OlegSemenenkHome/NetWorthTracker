@@ -3,9 +3,9 @@ package com.networthtracker.app
 import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import com.networthtracker.data.StockRepo
-import com.networthtracker.app.presentation.AssetDetailViewModel
-import com.networthtracker.app.presentation.HomeScreenViewModel
 import com.networthtracker.data.room.AssetDatabase
+import com.networthtracker.presentation.AssetDetailViewModel
+import com.networthtracker.presentation.HomeScreenViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation

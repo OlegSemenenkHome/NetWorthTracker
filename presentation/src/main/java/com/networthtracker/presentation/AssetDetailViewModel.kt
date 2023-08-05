@@ -6,13 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.networthtracker.app.presentation.trimToNearestThousandth
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-internal class AssetDetailViewModel(
+class AssetDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val assetDao: AssetDao
 ) : ViewModel(), KoinComponent {

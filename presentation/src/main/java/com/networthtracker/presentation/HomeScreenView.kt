@@ -52,8 +52,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.networthtracker.app.presentation.HomeScreenViewModel
-import com.networthtracker.app.presentation.trimToNearestThousandth
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
 import org.koin.androidx.compose.getViewModel
@@ -177,7 +175,7 @@ fun HomeScreenView(
                     items(viewModel.userAssetList) { asset ->
                         AssetBlock(
                             asset,
-                            onCardClicked = { navController.navigate(route = "assetDetail/${asset.name}") }
+                            onCardClicked = { navController.navigate(route = "assetDetail/${asset.name.trim()}") }
                         )
                     }
                 }

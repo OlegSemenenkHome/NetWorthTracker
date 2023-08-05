@@ -1,4 +1,4 @@
-package com.networthtracker.app.presentation
+package com.networthtracker.presentation
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -24,7 +24,7 @@ import org.koin.core.component.KoinComponent
 private const val LOG_TAG = "HOMEVIEWMODEL"
 private const val ONE_MINUTE_IN_MILLIS = 60_000L
 
-internal class HomeScreenViewModel(
+class HomeScreenViewModel(
     private val assetDao: AssetDao,
     private val cryptoRepo: CryptoRepo = CryptoRepo(),
     private val stockRepo: StockRepo,
@@ -47,23 +47,25 @@ internal class HomeScreenViewModel(
     init {
         viewModelScope.launch {
             getRepoSupportedAssets()
+
+            assetDao.getAssets()
+                .collect {
+                    println("COLLECT ST")
+                    userAssetList.clear()
+                    userAssetList.addAll(it)
+
+                    calculateTotalValue()
+                    println("COLLECT END")
+                }
         }
     }
 
     fun refreshPage() {
         viewModelScope.launch {
-            assetDao.getAssets()
-                .flowOn(Dispatchers.Default)
-                .collect {
-                    userAssetList.clear()
-                    userAssetList.addAll(it)
-
-                    if (System.currentTimeMillis() - lastTimeUpdated >= ONE_MINUTE_IN_MILLIS) {
-                        updateAssetValues()
-                    }
-
-                    calculateTotalValue()
-                }
+            if (System.currentTimeMillis() - lastTimeUpdated >= ONE_MINUTE_IN_MILLIS) {
+                updateAssetValues()
+                calculateTotalValue()
+            }
         }
     }
 
@@ -108,11 +110,9 @@ internal class HomeScreenViewModel(
 
     fun onSearchQueryChanged(query: String) {
         searchQuery = query
-        if (query.length > 1) {
-            viewModelScope.launch {
-                withContext(Dispatchers.Default) {
-                    filteredAssets = getFilteredAssets(query, assetList)
-                }
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                filteredAssets = getFilteredAssets(query, assetList)
             }
         }
     }
@@ -137,9 +137,11 @@ internal class HomeScreenViewModel(
     }
 
     fun calculateTotalValue() {
-        totalValue = userAssetList.sumOf { asset ->
-            asset.value.toDouble() * asset.balance.toDouble()
-        }
+        runCatching {
+            totalValue = userAssetList.sumOf { asset ->
+                asset.value.toDouble() * asset.balance.toDouble()
+            }
+        }.onFailure { println("ERROR ASTATE") }
     }
 
     private fun getFilteredAssets(

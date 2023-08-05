@@ -58,8 +58,9 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
-    implementation project(':data')
+
     implementation project(':presentation')
+    implementation project(':data')
 
     // Ktor dependencies for testing
     testImplementation "io.ktor:ktor-client-mock:$ktor_version"
