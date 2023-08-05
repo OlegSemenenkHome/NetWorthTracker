@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.networthtracker'
+    namespace 'com.networthtracker.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.networthtracker"
+        applicationId "com.networthtracker.app"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -24,13 +24,8 @@ android {
 
     buildTypes {
         release {
-            //Free API key. Probably should move to the backend and store securely if it was important
-            buildConfigField("String", "API_KEY", "\"$API_KEY\"")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            buildConfigField("String", "API_KEY", "\"$API_KEY\"")
         }
     }
     compileOptions {
@@ -63,6 +58,9 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
+    implementation project(':data')
+    implementation project(':presentation')
+
     // Ktor dependencies for testing
     testImplementation "io.ktor:ktor-client-mock:$ktor_version"
 
@@ -75,9 +73,6 @@ dependencies {
     implementation "androidx.room:room-runtime:2.5.2"
     implementation "androidx.room:room-ktx:2.5.2"
     ksp "androidx.room:room-compiler:2.5.2"
-
-    //Coil
-    implementation 'io.coil-kt:coil-compose:2.2.2'
 
     //Koin
     implementation "io.insert-koin:koin-android:$koin_version"
@@ -94,11 +89,6 @@ dependencies {
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
-
-    // Graph API
-    implementation "com.patrykandpatrick.vico:compose:1.6.5"
-    implementation "com.patrykandpatrick.vico:compose-m3:1.6.5"
-    implementation "com.patrykandpatrick.vico:core:1.6.5"
 
     //Testing
     testImplementation 'junit:junit:4.13.2'
