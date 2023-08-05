@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SearchBar
@@ -42,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -61,7 +64,6 @@ import org.koin.androidx.compose.getViewModel
 fun HomeScreenView(
     navController: NavController,
 ) {
-
     val viewModel: HomeScreenViewModel = getViewModel()
 
     var active by rememberSaveable { mutableStateOf(false) }
@@ -165,8 +167,31 @@ fun HomeScreenView(
                 }
             }
         ) { paddingValues ->
-            if (viewModel.userAssetList.isEmpty()) {
-                Text(text = "No Assets Added")
+            if (viewModel.loadingScreen) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(paddingValues)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(top = 50.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(100.dp)
+                        )
+                        Text(
+                            text = "Checking for previous assets",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(top = 20.dp)
+                        )
+                    }
+                }
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -196,7 +221,7 @@ internal fun AssetBlock(
         modifier = Modifier
             .height(120.dp)
             .padding(horizontal = 10.dp),
-        ) {
+    ) {
         ListItem(
             leadingContent = {
                 if (asset.imageURL.isNotBlank()) {

@@ -33,7 +33,7 @@ class HomeScreenViewModel(
 
     private var assetList = emptyList<ListAsset>()
 
-    private var loadingScreen by mutableStateOf(false)
+    var loadingScreen by mutableStateOf(false)
 
     private var errorState by mutableStateOf(false)
 
@@ -58,7 +58,7 @@ class HomeScreenViewModel(
                     userAssetList.addAll(it)
 
                     calculateTotalValue()
-                    loadingScreen = true
+                    loadingScreen = false
                 }
         }
     }
