@@ -33,6 +33,10 @@ class HomeScreenViewModel(
 
     private var assetList = emptyList<ListAsset>()
 
+    private var loadingScreen by mutableStateOf(false)
+
+    private var errorState by mutableStateOf(false)
+
     var filteredAssets by mutableStateOf(emptyList<ListAsset>())
 
     val userAssetList = mutableStateListOf<Asset>()
@@ -45,17 +49,16 @@ class HomeScreenViewModel(
 
 
     init {
+        loadingScreen = true
         viewModelScope.launch {
             getRepoSupportedAssets()
-
             assetDao.getAssets()
                 .collect {
-                    println("COLLECT ST")
                     userAssetList.clear()
                     userAssetList.addAll(it)
 
                     calculateTotalValue()
-                    println("COLLECT END")
+                    loadingScreen = true
                 }
         }
     }
@@ -82,7 +85,8 @@ class HomeScreenViewModel(
                     assetDao.updateAssetValue(updatedAsset.value, updatedAsset.key)
                 }
             }
-        }.onFailure { //TODO MAKE ERROR STATE }
+        }.onFailure { //TODO make error state do a thing
+            errorState = true
         }
     }
 
@@ -141,7 +145,7 @@ class HomeScreenViewModel(
             totalValue = userAssetList.sumOf { asset ->
                 asset.value.toDouble() * asset.balance.toDouble()
             }
-        }.onFailure { println("ERROR ASTATE") }
+        }.onFailure { errorState = true }
     }
 
     private fun getFilteredAssets(
