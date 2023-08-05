@@ -53,6 +53,7 @@ class HomeScreenViewModel(
         viewModelScope.launch {
             getRepoSupportedAssets()
             assetDao.getAssets()
+                .flowOn(Dispatchers.IO)
                 .collect {
                     userAssetList.clear()
                     userAssetList.addAll(it)
@@ -67,7 +68,6 @@ class HomeScreenViewModel(
         viewModelScope.launch {
             if (System.currentTimeMillis() - lastTimeUpdated >= ONE_MINUTE_IN_MILLIS) {
                 updateAssetValues()
-                calculateTotalValue()
             }
         }
     }
@@ -77,12 +77,11 @@ class HomeScreenViewModel(
             lastTimeUpdated = System.currentTimeMillis()
             viewModelScope.launch {
                 userAssetList.forEach { asset ->
-                    val updatedAsset = if (asset.assetType == AssetType.CRYPTO) {
-                        cryptoRepo.getAsset(asset.apiName)
+                    asset.value = if (asset.assetType == AssetType.CRYPTO) {
+                        cryptoRepo.getAsset(asset.apiName).value
                     } else {
-                        stockRepo.stockPriceLookup(asset)
+                        stockRepo.stockPriceLookup(asset).value
                     }
-                    assetDao.updateAssetValue(updatedAsset.value, updatedAsset.key)
                 }
             }
         }.onFailure { //TODO make error state do a thing
@@ -102,7 +101,7 @@ class HomeScreenViewModel(
                         }
                     }
                 }
-            }.onFailure { Log.e(LOG_TAG, ("Unable to select asset " + it.message)) }
+            }.onFailure { Log.e(LOG_TAG, ("Unable to select asset: " + it.message)) }
         }
     }
 
