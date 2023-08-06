@@ -1,5 +1,5 @@
 package com.networthtracker.data
-
+/*
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -18,7 +18,7 @@ class CryptoAPITest {
         clearAllMocks()
 
     }
-/*
+
     @Test
     fun `test getSupportedCryptoAssets success`() = testApplication {
         val mockResponse: HttpResponse = mockk<HttpResponse>()
@@ -31,10 +31,11 @@ class CryptoAPITest {
 
         assertEquals(listAsset, result)
     }
-*/
+
     @AfterEach
     fun tearDown() {
         unmockkAll()
     }
 }
 
+*/
