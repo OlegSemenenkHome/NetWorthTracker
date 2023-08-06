@@ -125,7 +125,7 @@ fun HomeScreenView(
                         ) {
                             items(viewModel.filteredAssets) { item ->
                                 ListItem(
-                                    headlineContent = { Text(text = item.name) },
+                                    headlineContent = { Text(text = item.name + " (${item.symbol.uppercase()})") },
                                     modifier = Modifier
                                         .clickable {
                                             viewModel.onAssetSelected(item.name)

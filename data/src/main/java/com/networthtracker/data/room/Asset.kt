@@ -10,7 +10,7 @@ data class Asset(
     val key: String,
     val name: String,
     val imageURL: String,
-    var value: String,
+    var value: String = "0",
     var balance: String,
     val symbol: String,
     val apiName: String = "",

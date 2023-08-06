@@ -56,7 +56,7 @@ class CryptoRepo(
             key = asset.symbol + AssetType.CRYPTO,
             name = asset.name,
             imageURL = asset.image.large,
-            value = asset.tickers?.getOrNull(0)?.last.toString(),
+            value = asset.tickers?.get(0)?.last.toString()?: "0",
             balance = "0",
             symbol = asset.symbol,
             apiName = assetName,
