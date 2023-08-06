@@ -8,8 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.networthtracker.data.CryptoRepo
-import com.networthtracker.data.StockRepo
+import com.networthtracker.data.CryptoAPI
+import com.networthtracker.data.StockAPI
 import com.networthtracker.data.ListAsset
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
@@ -26,8 +26,8 @@ private const val ONE_MINUTE_IN_MILLIS = 60_000L
 
 class HomeScreenViewModel(
     private val assetDao: AssetDao,
-    private val cryptoRepo: CryptoRepo = CryptoRepo(),
-    private val stockRepo: StockRepo,
+    private val cryptoAPI: CryptoAPI,
+    private val stockAPI: StockAPI,
 ) : ViewModel(), KoinComponent {
     private var lastTimeUpdated = System.currentTimeMillis()
 
@@ -78,9 +78,9 @@ class HomeScreenViewModel(
             viewModelScope.launch {
                 userAssetList.forEach { asset ->
                     asset.value = if (asset.assetType == AssetType.CRYPTO) {
-                        cryptoRepo.getAsset(asset.apiName).value
+                        cryptoAPI.getAsset(asset.apiName).value
                     } else {
-                        stockRepo.stockPriceLookup(asset).value
+                        stockAPI.stockPriceLookup(asset).value
                     }
                 }
             }
@@ -107,7 +107,7 @@ class HomeScreenViewModel(
 
     private suspend fun getRepoSupportedAssets() {
         runCatching {
-            assetList = cryptoRepo.getSupportedCryptoAssets() + stockRepo.getAllStocks()
+            assetList = cryptoAPI.getSupportedCryptoAssets() + stockAPI.getAllStocks()
         }.onFailure { Log.e(LOG_TAG, ("Unable to get supported assets " + it.message)) }
     }
 
@@ -121,14 +121,14 @@ class HomeScreenViewModel(
     }
 
     private suspend fun addCryptoAsset(listAsset: ListAsset) {
-        val cryptoAsset = cryptoRepo.getAsset(listAsset.id)
+        val cryptoAsset = cryptoAPI.getAsset(listAsset.id)
         if (cryptoAsset !in userAssetList) {
             assetDao.insertAsset(cryptoAsset)
         }
     }
 
     private suspend fun addStockAsset(asset: ListAsset) {
-        val stockAsset = stockRepo.stockLookup(asset)
+        val stockAsset = stockAPI.stockLookup(asset)
         if (stockAsset !in userAssetList) {
             assetDao.insertAsset(stockAsset)
         }

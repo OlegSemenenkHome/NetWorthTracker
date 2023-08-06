@@ -1,4 +1,4 @@
-package com.networthtracker.app
+package com.networthtracker.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.networthtracker.presentation.AssetDetailView
+import com.networthtracker.presentation.assetdetail.AssetDetailView
 import com.networthtracker.presentation.HomeScreenView
 import com.networthtracker.presentation.ui.theme.NetWorthTrackerTheme
 

@@ -2,7 +2,8 @@ package com.networthtracker.app
 
 import android.app.Application
 import androidx.lifecycle.SavedStateHandle
-import com.networthtracker.data.StockRepo
+import com.networthtracker.data.CryptoAPI
+import com.networthtracker.data.StockAPI
 import com.networthtracker.data.room.AssetDatabase
 import com.networthtracker.presentation.AssetDetailViewModel
 import com.networthtracker.presentation.HomeScreenViewModel
@@ -20,14 +21,15 @@ import org.koin.dsl.module
 class Application : Application() {
 
     private val viewModelModule = module {
-        viewModel { HomeScreenViewModel(assetDao = get(), stockRepo = get()) }
+        viewModel { HomeScreenViewModel(assetDao = get(), stockAPI = get(), cryptoAPI = get()) }
         viewModel { (state: SavedStateHandle) -> AssetDetailViewModel(state, get()) }
     }
 
     private val databaseModule =
         module {
             single { AssetDatabase.getInstance(this@Application).getAssetDao() }
-            single { StockRepo(client = client) }
+            single { StockAPI(client = client) }
+            single { CryptoAPI(client = client) }
         }
 
     private val client = HttpClient(OkHttp) {

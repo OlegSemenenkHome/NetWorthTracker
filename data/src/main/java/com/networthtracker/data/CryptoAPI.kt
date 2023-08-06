@@ -5,28 +5,16 @@ import com.networthtracker.data.room.AssetType
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 
 private const val COINGEKO_API_V3 = "https://api.coingecko.com/api/v3/coins/"
 
-class CryptoRepo(
+class CryptoAPI(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private var client: HttpClient
 ) {
-    private val client = HttpClient(OkHttp) {
-        install(ContentNegotiation) {
-            json(Json {
-                isLenient = true
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-            })
-        }
-    }
 
     suspend fun getSupportedCryptoAssets(): List<ListAsset> {
         return withContext(ioDispatcher) {
@@ -56,7 +44,7 @@ class CryptoRepo(
             key = asset.symbol + AssetType.CRYPTO,
             name = asset.name,
             imageURL = asset.image.large,
-            value = asset.tickers?.get(0)?.last.toString()?: "0",
+            value = asset.tickers?.get(0)?.last.toString() ?: "0",
             balance = "0",
             symbol = asset.symbol,
             apiName = assetName,

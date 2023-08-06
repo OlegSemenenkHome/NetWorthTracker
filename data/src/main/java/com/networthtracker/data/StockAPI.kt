@@ -1,10 +1,6 @@
 package com.networthtracker.data
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
 import io.ktor.client.call.body
@@ -21,24 +17,12 @@ private val RESOLUTION_LIST = listOf(
     Pair("D", 365)
 )
 
-class StockRepo(
+class StockAPI(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private var client: HttpClient
 ) {
 
     private val apiKey = BuildConfig.API_KEY
-
-    init {
-        client = HttpClient(OkHttp) {
-            install(ContentNegotiation) {
-                json(Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                    coerceInputValues = true
-                })
-            }
-        }
-    }
 
     suspend fun getAllStocks(): List<ListAsset> {
         return withContext(ioDispatcher) {

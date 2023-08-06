@@ -102,7 +102,6 @@ fun HomeScreenView(
                         IconButton(onClick = { active = true }) {
                             Icon(Icons.Default.Add, contentDescription = "Search")
                         }
-
                     }
                 )
                 if (active) {
@@ -171,7 +170,7 @@ fun HomeScreenView(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .padding(paddingValues)
                 ) {
                     Column(
@@ -186,7 +185,7 @@ fun HomeScreenView(
                                 .height(100.dp)
                         )
                         Text(
-                            text = "Checking for previous assets",
+                            text = "Loading Assets",
                             fontSize = 20.sp,
                             modifier = Modifier.padding(top = 20.dp)
                         )
