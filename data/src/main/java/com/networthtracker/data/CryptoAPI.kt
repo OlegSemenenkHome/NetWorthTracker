@@ -44,7 +44,9 @@ class CryptoAPI(
             key = asset.symbol + AssetType.CRYPTO,
             name = asset.name,
             imageURL = asset.image.large,
-            value = asset.tickers?.get(0)?.last.toString() ?: "0",
+            value = if (asset.tickers?.isNotEmpty() == true) {
+                asset.tickers[0].last.toString()
+            } else "0",
             balance = "0",
             symbol = asset.symbol,
             apiName = assetName,

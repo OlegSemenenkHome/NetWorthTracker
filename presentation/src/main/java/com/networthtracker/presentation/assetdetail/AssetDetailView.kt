@@ -38,7 +38,6 @@ import org.koin.androidx.compose.getViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.networthtracker.presentation.AssetDetailViewModel
 import com.networthtracker.presentation.trimToNearestThousandth
 
 @OptIn(ExperimentalMaterial3Api::class)

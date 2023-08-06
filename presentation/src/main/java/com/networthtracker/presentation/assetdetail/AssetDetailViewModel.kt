@@ -1,4 +1,4 @@
-package com.networthtracker.presentation
+package com.networthtracker.presentation.assetdetail
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
+import com.networthtracker.data.room.AssetType
+import com.networthtracker.presentation.trimToNearestThousandth
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
@@ -17,9 +19,11 @@ class AssetDetailViewModel(
 ) : ViewModel(), KoinComponent {
     var asset: Asset? by mutableStateOf(null)
 
+    private val assetKey = savedStateHandle.get<String>("assetKey") ?: ""
+
     init {
         viewModelScope.launch {
-            asset = assetDao.getAsset(savedStateHandle.get<String>("assetName").orEmpty())
+            asset = assetDao.getAsset(assetKey)
         }
     }
 
@@ -41,7 +45,7 @@ class AssetDetailViewModel(
         viewModelScope.launch {
             asset?.let {
                 assetDao.updateAssetBalance(updatedBalance, it.key)
-                asset = assetDao.getAsset(it.name)
+                asset = assetDao.getAsset(it.key)
             }
         }
     }

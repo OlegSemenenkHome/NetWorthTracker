@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.networthtracker.data.CryptoAPI
 import com.networthtracker.data.StockAPI
 import com.networthtracker.data.room.AssetDatabase
-import com.networthtracker.presentation.AssetDetailViewModel
+import com.networthtracker.presentation.assetdetail.AssetDetailViewModel
 import com.networthtracker.presentation.HomeScreenViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp

@@ -33,9 +33,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -68,10 +71,6 @@ fun HomeScreenView(
 
     var active by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(viewModel.userAssetList) {
-        viewModel.calculateTotalValue()
-    }
-
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleObserver = remember {
         LifecycleEventObserver { _, event ->
@@ -87,6 +86,7 @@ fun HomeScreenView(
             lifecycle.removeObserver(lifecycleObserver)
         }
     }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -192,6 +192,25 @@ fun HomeScreenView(
                     }
                 }
             } else {
+                if (viewModel.errorState) {
+                    AlertDialog(
+                        onDismissRequest = viewModel::dismissError,
+                        confirmButton = {
+                            Button(onClick = viewModel::dismissError) {
+                                Text(
+                                    text = "Ok",
+                                    color = Color.White
+                                )
+                            }
+                        },
+                        title = {
+                            Text(text = "Error")
+                        },
+                        text = { Text(text = viewModel.errorString) },
+                        modifier = Modifier,
+                    )
+                }
+
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.padding(paddingValues)
@@ -199,7 +218,11 @@ fun HomeScreenView(
                     items(viewModel.userAssetList) { asset ->
                         AssetBlock(
                             asset,
-                            onCardClicked = { navController.navigate(route = "assetDetail/${asset.name.trim()}") }
+                            onCardClicked = {
+                                navController.navigate(
+                                    route = "assetDetail/${asset.key}/"
+                                )
+                            }
                         )
                     }
                 }

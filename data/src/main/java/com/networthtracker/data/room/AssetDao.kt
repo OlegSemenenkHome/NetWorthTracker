@@ -14,8 +14,8 @@ interface AssetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAsset(asset: Asset)
 
-    @Query("SELECT * FROM asset WHERE name = :name")
-    suspend fun getAsset(name: String): Asset
+    @Query("SELECT * FROM asset WHERE `key` = :key")
+    suspend fun getAsset(key: String): Asset
 
     @Query("UPDATE asset SET balance = :newBalance WHERE `key` = :key")
     suspend fun updateAssetBalance(newBalance: String, key: String)

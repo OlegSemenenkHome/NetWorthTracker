@@ -35,7 +35,11 @@ class HomeScreenViewModel(
 
     var loadingScreen by mutableStateOf(false)
 
-    private var errorState by mutableStateOf(false)
+    var errorState by mutableStateOf(false)
+        private set
+
+    var errorString by mutableStateOf("")
+        private set
 
     var filteredAssets by mutableStateOf(emptyList<ListAsset>())
 
@@ -46,7 +50,6 @@ class HomeScreenViewModel(
 
     var searchQuery: String by mutableStateOf("")
         private set
-
 
     init {
         loadingScreen = true
@@ -72,23 +75,6 @@ class HomeScreenViewModel(
         }
     }
 
-    private fun updateAssetValues() {
-        runCatching {
-            lastTimeUpdated = System.currentTimeMillis()
-            viewModelScope.launch {
-                userAssetList.forEach { asset ->
-                    asset.value = if (asset.assetType == AssetType.CRYPTO) {
-                        cryptoAPI.getAsset(asset.apiName).value
-                    } else {
-                        stockAPI.stockPriceLookup(asset).value
-                    }
-                }
-            }
-        }.onFailure { //TODO make error state do a thing
-            errorState = true
-        }
-    }
-
     fun onAssetSelected(name: String) {
         viewModelScope.launch {
             runCatching {
@@ -101,14 +87,12 @@ class HomeScreenViewModel(
                         }
                     }
                 }
-            }.onFailure { Log.e(LOG_TAG, ("Unable to select asset: " + it.message)) }
+            }.onFailure {
+                errorString = "Unable to update asset values"
+                errorState = true
+                Log.e(LOG_TAG, ("Unable to select asset: "), it)
+            }
         }
-    }
-
-    private suspend fun getRepoSupportedAssets() {
-        runCatching {
-            assetList = cryptoAPI.getSupportedCryptoAssets() + stockAPI.getAllStocks()
-        }.onFailure { Log.e(LOG_TAG, ("Unable to get supported assets " + it.message)) }
     }
 
     fun onSearchQueryChanged(query: String) {
@@ -118,6 +102,32 @@ class HomeScreenViewModel(
                 filteredAssets = getFilteredAssets(query, assetList)
             }
         }
+    }
+
+    fun clearQuery() {
+        searchQuery = ""
+        filteredAssets = emptyList()
+    }
+
+    fun dismissError() {
+        errorString = ""
+        errorState = false
+    }
+
+    private fun calculateTotalValue() {
+        runCatching {
+            totalValue = userAssetList.sumOf { asset ->
+                asset.value.toDouble() * asset.balance.toDouble()
+            }
+        }
+    }
+
+    private fun getFilteredAssets(
+        query: String,
+        listAssets: List<ListAsset>,
+    ): List<ListAsset> {
+        if (query.isEmpty()) return emptyList()
+        return listAssets.filter { it.name.lowercase().startsWith(query.lowercase()) }
     }
 
     private suspend fun addCryptoAsset(listAsset: ListAsset) {
@@ -134,24 +144,32 @@ class HomeScreenViewModel(
         }
     }
 
-    fun clearQuery() {
-        searchQuery = ""
-        filteredAssets = emptyList()
-    }
-
-    fun calculateTotalValue() {
+    private suspend fun getRepoSupportedAssets() {
         runCatching {
-            totalValue = userAssetList.sumOf { asset ->
-                asset.value.toDouble() * asset.balance.toDouble()
-            }
-        }.onFailure { errorState = true }
+            assetList = cryptoAPI.getSupportedCryptoAssets() + stockAPI.getAllStocks()
+        }.onFailure {
+            errorString = "Unable to update asset values"
+            errorState = true
+            Log.e(LOG_TAG, ("Unable to get supported assets "), it)
+        }
     }
 
-    private fun getFilteredAssets(
-        query: String,
-        listAssets: List<ListAsset>,
-    ): List<ListAsset> {
-        if (query.isEmpty()) return emptyList()
-        return listAssets.filter { it.name.lowercase().startsWith(query.lowercase()) }
+    private fun updateAssetValues() {
+        runCatching {
+            lastTimeUpdated = System.currentTimeMillis()
+            viewModelScope.launch {
+                userAssetList.forEach { asset ->
+                    asset.value = if (asset.assetType == AssetType.CRYPTO) {
+                        cryptoAPI.getAsset(asset.apiName).value
+                    } else {
+                        stockAPI.stockPriceLookup(asset).value
+                    }
+                }
+            }
+        }.onFailure {
+            errorString = "Unable to update asset values"
+            errorState = true
+            Log.e(LOG_TAG, ("Unable to get supported assets "), it)
+        }
     }
 }

@@ -13,7 +13,7 @@ private const val BASE_URL = "https://finnhub.io/api/v1/"
 private val RESOLUTION_LIST = listOf(
     Pair("15", 96),
     Pair("15", 672),
-    Pair("60", 730),
+    Pair("60", 168),
     Pair("D", 365)
 )
 
