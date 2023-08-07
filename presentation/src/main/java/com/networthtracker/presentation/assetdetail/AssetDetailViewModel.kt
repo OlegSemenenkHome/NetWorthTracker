@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
-import com.networthtracker.data.room.AssetType
 import com.networthtracker.presentation.trimToNearestThousandth
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -19,12 +18,20 @@ class AssetDetailViewModel(
 ) : ViewModel(), KoinComponent {
     var asset: Asset? by mutableStateOf(null)
 
-    private val assetKey = savedStateHandle.get<String>("assetKey") ?: ""
+    var errorState by mutableStateOf(false)
+    var errorText by mutableStateOf("")
 
     init {
         viewModelScope.launch {
-            asset = assetDao.getAsset(assetKey)
+            savedStateHandle.get<String>("assetKey")?.let { assetKey ->
+                asset = assetDao.getAsset(assetKey)
+            }
         }
+    }
+
+    fun dismissError() {
+        errorText = ""
+        errorState = false
     }
 
     fun getAssetTotalValue(): String {
@@ -43,9 +50,14 @@ class AssetDetailViewModel(
 
     fun updateAsset(updatedBalance: String) {
         viewModelScope.launch {
-            asset?.let {
-                assetDao.updateAssetBalance(updatedBalance, it.key)
-                asset = assetDao.getAsset(it.key)
+            if (updatedBalance.matches(Regex("[0-9 ]+"))) {
+                asset?.let {
+                    assetDao.updateAssetBalance(updatedBalance, it.key)
+                    asset = assetDao.getAsset(it.key)
+                }
+            } else {
+                errorState = true
+                errorText = "Unable to update value. Please enter a valid number"
             }
         }
     }

@@ -33,15 +33,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +56,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
+import com.networthtracker.presentation.composables.ErrorDialog
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -193,21 +190,9 @@ fun HomeScreenView(
                 }
             } else {
                 if (viewModel.errorState) {
-                    AlertDialog(
+                    ErrorDialog(
                         onDismissRequest = viewModel::dismissError,
-                        confirmButton = {
-                            Button(onClick = viewModel::dismissError) {
-                                Text(
-                                    text = "Ok",
-                                    color = Color.White
-                                )
-                            }
-                        },
-                        title = {
-                            Text(text = "Error")
-                        },
-                        text = { Text(text = viewModel.errorString) },
-                        modifier = Modifier,
+                        errorText = viewModel.errorString
                     )
                 }
 

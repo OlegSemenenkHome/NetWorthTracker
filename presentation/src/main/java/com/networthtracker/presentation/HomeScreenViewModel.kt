@@ -155,6 +155,7 @@ class HomeScreenViewModel(
     }
 
     private fun updateAssetValues() {
+        loadingScreen = true
         runCatching {
             lastTimeUpdated = System.currentTimeMillis()
             viewModelScope.launch {
@@ -171,5 +172,6 @@ class HomeScreenViewModel(
             errorState = true
             Log.e(LOG_TAG, ("Unable to get supported assets "), it)
         }
+        loadingScreen = false
     }
 }
