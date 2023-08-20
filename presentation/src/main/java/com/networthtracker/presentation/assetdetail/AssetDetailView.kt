@@ -1,4 +1,4 @@
-package com.networthtracker.presentation
+package com.networthtracker.presentation.assetdetail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +38,8 @@ import org.koin.androidx.compose.getViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.networthtracker.presentation.composables.ErrorDialog
+import com.networthtracker.presentation.trimToNearestThousandth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +49,7 @@ fun AssetDetailView(navController: NavHostController) {
     var text by remember { mutableStateOf("") }
     var isTextFieldVisible by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -91,10 +94,8 @@ fun AssetDetailView(navController: NavHostController) {
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 isTextFieldVisible = false
-                                if (text.matches(Regex("[0-9 ]+"))) {
                                     viewModel.updateAsset(text)
                                 }
-                            }
                         ),
                         modifier = Modifier
                             .padding(10.dp)
@@ -104,8 +105,14 @@ fun AssetDetailView(navController: NavHostController) {
                             .onGloballyPositioned { focusRequester.requestFocus() },
                     )
                 } else {
-                    viewModel.asset?.name?.let { name ->
+                    if (viewModel.errorState) {
+                        ErrorDialog(
+                            onDismissRequest = viewModel::dismissError,
+                            errorText = viewModel.errorText
+                        )
+                    }
 
+                    viewModel.asset?.name?.let { name ->
                         Text(
                             text = name,
                             fontSize = if (name.length > 20) 20.sp
@@ -113,7 +120,7 @@ fun AssetDetailView(navController: NavHostController) {
                             modifier = Modifier.padding(end = 10.dp)
                         )
                         Text(
-                            text = " ${viewModel.asset?.value?.trimToNearestThousandth()}",
+                            text = "$${viewModel.asset?.value?.trimToNearestThousandth()}",
                             fontSize = 30.sp
                         )
                     }
@@ -165,4 +172,3 @@ fun AssetDetailView(navController: NavHostController) {
         }
     }
 }
-

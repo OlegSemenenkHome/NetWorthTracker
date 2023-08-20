@@ -38,7 +38,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +56,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
+import com.networthtracker.presentation.composables.ErrorDialog
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -67,10 +67,6 @@ fun HomeScreenView(
     val viewModel: HomeScreenViewModel = getViewModel()
 
     var active by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(viewModel.userAssetList) {
-        viewModel.calculateTotalValue()
-    }
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val lifecycleObserver = remember {
@@ -88,6 +84,7 @@ fun HomeScreenView(
         }
     }
 
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.secondary
@@ -102,7 +99,6 @@ fun HomeScreenView(
                         IconButton(onClick = { active = true }) {
                             Icon(Icons.Default.Add, contentDescription = "Search")
                         }
-
                     }
                 )
                 if (active) {
@@ -171,7 +167,7 @@ fun HomeScreenView(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .padding(paddingValues)
                 ) {
                     Column(
@@ -186,13 +182,20 @@ fun HomeScreenView(
                                 .height(100.dp)
                         )
                         Text(
-                            text = "Checking for previous assets",
+                            text = "Loading Assets",
                             fontSize = 20.sp,
                             modifier = Modifier.padding(top = 20.dp)
                         )
                     }
                 }
             } else {
+                if (viewModel.errorState) {
+                    ErrorDialog(
+                        onDismissRequest = viewModel::dismissError,
+                        errorText = viewModel.errorString
+                    )
+                }
+
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.padding(paddingValues)
@@ -200,7 +203,11 @@ fun HomeScreenView(
                     items(viewModel.userAssetList) { asset ->
                         AssetBlock(
                             asset,
-                            onCardClicked = { navController.navigate(route = "assetDetail/${asset.name.trim()}") }
+                            onCardClicked = {
+                                navController.navigate(
+                                    route = "assetDetail/${asset.key}/"
+                                )
+                            }
                         )
                     }
                 }
