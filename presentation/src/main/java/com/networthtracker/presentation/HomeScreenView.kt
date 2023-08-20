@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
@@ -57,14 +58,11 @@ import coil.compose.AsyncImage
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
 import com.networthtracker.presentation.composables.ErrorDialog
-import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreenView(
-    navController: NavController,
-) {
-    val viewModel: HomeScreenViewModel = getViewModel()
+fun HomeScreenView(navController: NavController) {
+    val viewModel = hiltViewModel<HomeScreenViewModel>()
 
     var active by rememberSaveable { mutableStateOf(false) }
 
@@ -83,7 +81,6 @@ fun HomeScreenView(
             lifecycle.removeObserver(lifecycleObserver)
         }
     }
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -109,7 +106,7 @@ fun HomeScreenView(
                             viewModel.onAssetSelected(it)
                             active = false
                         },
-                        active = active,
+                        active = true,
                         onActiveChange = { active = it },
                         placeholder = { Text("Look up asset") },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }

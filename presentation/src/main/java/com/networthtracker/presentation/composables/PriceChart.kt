@@ -11,65 +11,65 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.networthtracker.presentation.trimToNearestThousandth
 
 @Composable
 internal fun PriceChart(
-    yPoints: List<Float> = listOf(
-        199f, 52f, 193f, 290f, 150f, 445f, 1000f, 800f, 990f, 900f, 300f
-    ),
+    yPoints: List<Double>,
     graphColor: Color = Color.Green
 ) {
     val paint = Paint().asFrameworkPaint().apply {
-        this.color = Color.White.hashCode()
+        this.textSize = 35f
+        this.color = Color.White.toArgb()
     }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(350.dp)
             .padding(bottom = 20.dp)
+            .padding(top = 30.dp)
     ) {
         Canvas(
             modifier = Modifier
                 .height(300.dp)
                 .fillMaxWidth()
         ) {
-
-            val modifier = ((size.height - 20) / yPoints.max())
+            val newYMax = yPoints.max()
+            val newYMin = yPoints.min()
+            val diff = newYMax - newYMin
+            val xModifier = (size.height / (diff)) * 0.90
             val newY = ArrayList<Float>()
             yPoints.forEach {
-                newY.add(size.height - it * modifier)
+                newY.add(((it - newYMin) * xModifier).toFloat())
             }
 
-            val spacing = (size.width / yPoints.size) - 10
+            val spacing = (size.width / yPoints.size) - .5f
 
             val normX = mutableListOf<Float>()
             val normY = mutableListOf<Float>()
 
             val strokePath = Path().apply {
-
                 for (i in newY.indices) {
-
-                    val currentX = spacing + i * spacing
+                    val currentX =
+                        (spacing + i * spacing) + 150
 
                     if (i == 0) {
-
                         moveTo(currentX, newY[i])
                     } else {
-
-                        val previousX = spacing + (i - 1) * spacing
+                        val previousX = (spacing + (i - 1) * spacing) + 150
 
                         val conX1 = (previousX + currentX) / 2f
                         val conX2 = (previousX + currentX) / 2f
 
                         val conY1 = newY[i - 1]
                         val conY2 = newY[i]
-
 
                         cubicTo(
                             x1 = conX1,
@@ -80,14 +80,10 @@ internal fun PriceChart(
                             y3 = newY[i]
                         )
                     }
-
-                    // Circle dot points
                     normX.add(currentX)
                     normY.add(newY[i])
-
                 }
             }
-
 
             drawPath(
                 path = strokePath,
@@ -99,39 +95,72 @@ internal fun PriceChart(
             )
 
             val minY = newY.min()
-            val maxY = newY.max()
+            val maxY = newY.max() + 10
+
+            drawLine(
+                color = Color.White,
+                start = Offset(150f, (maxY / 2f)),
+                end = Offset(size.width, (maxY / 2f)),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            )
+
+            drawLine(
+                color = Color.White,
+                start = Offset(150f, 0f),
+                end = Offset(150f, maxY),
+            )
+
+
+            drawLine(
+                color = Color.White,
+                start = Offset(150f, (maxY / 1.33f)),
+                end = Offset(size.width, (maxY / 1.33f)),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            )
+
+            drawLine(
+                color = Color.White,
+                start = Offset(150f, (maxY / 4)),
+                end = Offset(size.width, (maxY / 4)),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            )
 
             drawIntoCanvas {
+                it.nativeCanvas.drawLine(150f, maxY, size.width, maxY, paint)
+
                 it.nativeCanvas.drawText(
-                    "Min Val ${yPoints.min()}",
+                    newYMin.toString(),
                     0f,
-                    maxY,
+                    (maxY + 10),
                     paint
                 )
 
                 it.nativeCanvas.drawText(
-                    "Max Val ${yPoints.max()}",
+                    "${newYMin + (diff * .5)}".trimToNearestThousandth(),
                     0f,
-                    minY,
+                    (maxY / 2) + 10,
                     paint
                 )
-            }
 
-            (normX.indices).forEach { point ->
+                it.nativeCanvas.drawText(
+                    "${newYMin + (diff * .25)}".trimToNearestThousandth(),
+                    0f,
+                    (maxY / 1.33f) + 10,
+                    paint
+                )
 
-                drawIntoCanvas {
-                    it.nativeCanvas.drawText(
-                        "Date",
-                        normX[point],
-                        size.height - 10,
-                        paint
-                    )
-                }
+                it.nativeCanvas.drawText(
+                    "${newYMin + (diff * .75)}".trimToNearestThousandth(),
+                    0f,
+                    (maxY / 4) + 10,
+                    paint
+                )
 
-                drawCircle(
-                    Color.Black,
-                    radius = 3.dp.toPx(),
-                    center = Offset(normX[point], normY[point])
+                it.nativeCanvas.drawText(
+                    newYMax.toString(),
+                    0f,
+                    minY + 10,
+                    paint
                 )
             }
         }

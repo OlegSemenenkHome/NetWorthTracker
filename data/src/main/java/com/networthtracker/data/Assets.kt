@@ -1,9 +1,10 @@
 package com.networthtracker.data
 
 import com.networthtracker.data.room.AssetType
+import com.squareup.moshi.JsonClass
 import kotlinx.serialization.Serializable
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class ListAsset(
     val id: String,
     val symbol: String,
@@ -11,7 +12,7 @@ data class ListAsset(
     val assetType: AssetType = AssetType.CRYPTO,
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class CryptoAsset(
     val symbol: String,
     val name: String,
@@ -19,31 +20,30 @@ data class CryptoAsset(
     val tickers: List<Ticker>?,
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class ImageLinks(
     val thumb: String,
     val small: String,
     val large: String,
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class Ticker(
     val last: Double,
 )
 
-
-@Serializable
+@JsonClass(generateAdapter = true)
 data class StockAsset(
     var description: String,
     var displaySymbol: String,
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class PriceResult(
     var c: Double,
 )
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class CandleData (
-    var c: ArrayList<Double>,
+    var c: List<Double>,
 )

@@ -34,22 +34,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import org.koin.androidx.compose.getViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.networthtracker.presentation.composables.ErrorDialog
+import com.networthtracker.presentation.composables.PriceChart
 import com.networthtracker.presentation.trimToNearestThousandth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssetDetailView(navController: NavHostController) {
-    val viewModel: AssetDetailViewModel = getViewModel()
+    val viewModel = hiltViewModel<AssetDetailViewModel>()
 
     var text by remember { mutableStateOf("") }
     var isTextFieldVisible by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -94,8 +94,8 @@ fun AssetDetailView(navController: NavHostController) {
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 isTextFieldVisible = false
-                                    viewModel.updateAsset(text)
-                                }
+                                viewModel.updateAsset(text)
+                            }
                         ),
                         modifier = Modifier
                             .padding(10.dp)
@@ -167,6 +167,9 @@ fun AssetDetailView(navController: NavHostController) {
                         text = "Total Value: ${viewModel.getAssetTotalValue()} ",
                         fontSize = 25.sp
                     )
+
+                    if (viewModel.priceHistory.isNotEmpty())
+                        PriceChart(viewModel.priceHistory)
                 }
             }
         }
