@@ -12,7 +12,9 @@ import com.networthtracker.data.room.AssetType
 import com.networthtracker.presentation.assetdetail.AssetDetailView
 import com.networthtracker.presentation.HomeScreenView
 import com.networthtracker.presentation.ui.theme.NetWorthTrackerTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

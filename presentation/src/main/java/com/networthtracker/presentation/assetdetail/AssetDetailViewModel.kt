@@ -6,27 +6,42 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.networthtracker.data.AssetRepositoryImpl
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
+import com.networthtracker.data.room.AssetType
 import com.networthtracker.presentation.trimToNearestThousandth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
+import javax.inject.Inject
 
-class AssetDetailViewModel(
+@HiltViewModel
+class AssetDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val assetDao: AssetDao
-) : ViewModel(), KoinComponent {
+    private val assetDao: AssetDao,
+    private val assetRepositoryImpl: AssetRepositoryImpl
+) : ViewModel() {
     var asset: Asset? by mutableStateOf(null)
-
     var errorState by mutableStateOf(false)
     var errorText by mutableStateOf("")
+    var priceHistory by mutableStateOf(listOf<Double>())
 
     init {
         viewModelScope.launch {
             savedStateHandle.get<String>("assetKey")?.let { assetKey ->
                 asset = assetDao.getAsset(assetKey)
+                priceHistory = priceHistory + getPriceData()
             }
         }
+    }
+
+    private suspend fun getPriceData(): List<Double> {
+        asset?.let {
+            if (it.assetType == AssetType.STOCK) {
+                return assetRepositoryImpl.getStockPriceHistory(it)[0].c
+            }
+        }
+        return listOf()
     }
 
     fun dismissError() {
@@ -62,4 +77,3 @@ class AssetDetailViewModel(
         }
     }
 }
-

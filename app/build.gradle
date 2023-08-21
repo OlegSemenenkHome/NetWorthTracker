@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlinx-serialization'
     id 'com.google.devtools.ksp'
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.hiltPlugin)
 }
 
 android {
@@ -65,7 +67,6 @@ dependencies {
     // Ktor dependencies for testing
     testImplementation "io.ktor:ktor-client-mock:$ktor_version"
 
-
     // M3
     implementation "androidx.compose.material3:material3:1.2.0-alpha03"
     implementation "androidx.compose.material3:material3-window-size-class:1.1.1"
@@ -74,11 +75,6 @@ dependencies {
     implementation "androidx.room:room-runtime:2.5.2"
     implementation "androidx.room:room-ktx:2.5.2"
     ksp "androidx.room:room-compiler:2.5.2"
-
-    //Koin
-    implementation "io.insert-koin:koin-android:$koin_version"
-    implementation "io.insert-koin:koin-core:$koin_version"
-    implementation "io.insert-koin:koin-androidx-compose:3.4.5"
 
     //Core
     implementation "androidx.navigation:navigation-compose:$nav_version"
@@ -94,4 +90,9 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    //hilt
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
 }
