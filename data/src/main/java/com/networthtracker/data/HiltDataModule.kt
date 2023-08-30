@@ -48,16 +48,26 @@ object HiltDataModule {
 
     @Provides
     @Singleton
-    fun provideAssetRepository(
+    fun provideAssetService(
         stockApi: StockApi,
         cryptoApi: CryptoApi,
-        dispatcher: CoroutineDispatcher,
+        assetDao: AssetDao
+    ): AssetService {
+        return AssetServiceImpl(
+            stockApi = stockApi,
+            cryptoApi = cryptoApi,
+            assetDao = assetDao
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideAssetRepository(
+        assetServiceImpl: AssetService,
         assetDao: AssetDao
     ): AssetRepository {
         return AssetRepositoryImpl(
-            stockApi = stockApi,
-            cryptoApi = cryptoApi,
-            dispatcher = dispatcher,
+            assetServiceImpl = assetServiceImpl,
             assetDao = assetDao
         )
     }

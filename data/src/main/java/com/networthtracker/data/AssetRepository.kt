@@ -1,21 +1,14 @@
 package com.networthtracker.data
 
 import com.networthtracker.data.room.Asset
+import kotlinx.coroutines.flow.Flow
 
-/**
- * A repo to handle the fetching and saving of assets
- */
 interface AssetRepository {
 
-    suspend fun getSupportedCryptoAssets(): List<ListAsset>
+    suspend fun addAsset(listAsset: ListAsset)
 
-    suspend fun getCryptoAsset(assetName: String): Asset
+    suspend fun updateAssetBalance(newBalance: String, key: String): Asset
 
-    suspend fun getAllStocks(): List<ListAsset>
+    fun getUserAssets(): Flow<List<Asset>>
 
-    suspend fun stockLookup(listAsset: ListAsset): Asset
-
-    suspend fun getStockPriceHistory(asset: Asset): List<CandleData>
-
-    suspend fun stockPriceLookup(asset: Asset): Asset
 }
