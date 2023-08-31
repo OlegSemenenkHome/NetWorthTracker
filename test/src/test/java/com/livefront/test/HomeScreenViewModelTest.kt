@@ -44,6 +44,8 @@ internal class HomeScreenViewModelTest {
 
         vm = HomeScreenViewModel(assetServiceImpl = mockService, assetRepository = asssetRepo)
 
+        Thread.sleep(1000L)
+
         assertFalse(vm.loadingScreen)
         assert(vm.userAssetList.isEmpty())
     }
