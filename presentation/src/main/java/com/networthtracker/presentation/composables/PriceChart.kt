@@ -54,25 +54,17 @@ internal fun PriceChart(
                     newY.add(size.height - ((it - newYMin) * xModifier).toFloat())
                 }
 
-                val spacingModifiers = if (yPoints.size < 500) {
-                    .25f
-                } else if (yPoints.size < 600) {
-                    .2f
-                } else if (yPoints.size < 1000) {
-                    .10f
-                } else {
-                    .12f
-                }
-
-                val spacing = (maxWidth / (yPoints.size)) - spacingModifiers
+                val spacing = ((maxWidth-150) / (yPoints.size))
+                var lastX = 0.0f
 
                 val normX = mutableListOf<Float>()
                 val normY = mutableListOf<Float>()
 
                 val strokePath = Path().apply {
                     for (i in newY.indices) {
-                        val currentX =
-                            (spacing + i * spacing) + 150
+                        val currentX = (spacing + i * spacing) + 150
+                        lastX = currentX
+
                         if (i == 0) {
                             moveTo(currentX, newY[i])
                         } else {
@@ -139,8 +131,8 @@ internal fun PriceChart(
                 )
 
                 drawIntoCanvas {
-                    it.nativeCanvas.drawLine(150f, maxY, maxWidth, maxY, paint)
-                    it.nativeCanvas.drawLine(maxWidth, 0f, maxWidth, maxY, paint)
+                    it.nativeCanvas.drawLine(150f, maxY, lastX, maxY, paint)
+                    it.nativeCanvas.drawLine(lastX, 0f, lastX, maxY, paint)
 
                     it.nativeCanvas.drawText(
                         newYMin.toString(),
