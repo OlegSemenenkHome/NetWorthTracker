@@ -10,7 +10,9 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -48,5 +50,57 @@ internal class HomeScreenViewModelTest {
 
         assertFalse(vm.loadingScreen)
         assert(vm.userAssetList.isEmpty())
+    }
+
+    @Test
+    fun `We should be in an error state if we are unable `() = runTest {
+        // Given
+        coEvery { asssetRepo.getUserAssets() } returns flowOf(emptyList())
+        coEvery { mockService.getSupportedCryptoAssets() } returns Result.failure(Exception())
+        coEvery { mockService.getAllStocks() } returns  Result.failure(Exception())
+
+        vm = HomeScreenViewModel(assetServiceImpl = mockService, assetRepository = asssetRepo)
+
+        Thread.sleep(1000L)
+
+        assertTrue(vm.errorState)
+        assert(vm.userAssetList.isEmpty())
+    }
+
+    @Test
+    fun `We should filter the list`() = runTest {
+        // Given
+        coEvery { asssetRepo.getUserAssets() } returns flowOf(emptyList())
+        coEvery { mockService.getSupportedCryptoAssets() } returns Result.success(sampleCryptoListAsset)
+        coEvery { mockService.getAllStocks() } returns  Result.success(sampleStockListAsset)
+
+        vm = HomeScreenViewModel(assetServiceImpl = mockService, assetRepository = asssetRepo)
+        vm.onSearchQueryChanged("Apple")
+
+        Thread.sleep(100L) // Wait while the list filters tests have passed using 1L, but I used 100 to be safe
+
+        //
+       assertEquals(vm.filteredAssets[0].symbol, "AAPL")
+       assertEquals(vm.filteredAssets.size, 1)
+    }
+
+    @Test
+    fun `Need to make sure the query state is cleared`() = runTest {
+        // Given
+        coEvery { asssetRepo.getUserAssets() } returns flowOf(emptyList())
+        coEvery { mockService.getSupportedCryptoAssets() } returns Result.success(sampleCryptoListAsset)
+        coEvery { mockService.getAllStocks() } returns  Result.success(sampleStockListAsset)
+
+        vm = HomeScreenViewModel(assetServiceImpl = mockService, assetRepository = asssetRepo)
+        vm.onSearchQueryChanged("Apple")
+
+        Thread.sleep(100L) // Wait while the list filters tests have passed using 1L, but I used 100 to be safe
+
+        assertTrue(vm.filteredAssets.isNotEmpty())
+
+        vm.clearQuery()
+
+        assertTrue(vm.filteredAssets.isEmpty())
+        assertTrue(vm.searchQuery.isEmpty())
     }
 }

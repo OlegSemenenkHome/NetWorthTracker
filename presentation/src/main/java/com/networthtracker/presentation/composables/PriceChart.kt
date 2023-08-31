@@ -115,7 +115,6 @@ internal fun PriceChart(
                     end = Offset(150f, maxY),
                 )
 
-
                 drawLine(
                     color = Color.White,
                     start = Offset(150f, (maxY / 1.33f)),
