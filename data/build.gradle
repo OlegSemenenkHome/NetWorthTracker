@@ -45,24 +45,19 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation libs.core.ktx
+    implementation libs.material
+    implementation(libs.kotlinx.serialization.json)
 
     //Room
-    implementation "androidx.room:room-runtime:2.5.2"
-    implementation "androidx.room:room-ktx:2.5.2"
-    ksp "androidx.room:room-compiler:2.5.2"
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation libs.room.runtime
+    implementation libs.room.ktx
+    ksp libs.room.compiler
 
     //networking
     implementation(libs.converter.moshi)
-    implementation 'com.squareup.moshi:moshi:1.14.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
+    implementation libs.squareup.moshi
+    implementation libs.logging.interceptor
     ksp(libs.moshi)
     implementation(libs.retrofit)
     implementation(libs.okhttp)

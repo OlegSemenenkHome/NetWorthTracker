@@ -16,3 +16,4 @@ rootProject.name = "NetWorthTracker"
 include ':app'
 include ':data'
 include ':presentation'
+include ':test'

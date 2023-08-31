@@ -6,7 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.networthtracker.data.AssetRepositoryImpl
+import com.networthtracker.data.AssetService
+import com.networthtracker.data.repo.AssetRepository
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
 import com.networthtracker.data.room.AssetType
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class AssetDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val assetDao: AssetDao,
-    private val assetRepositoryImpl: AssetRepositoryImpl
+    private val assetServiceImpl: AssetService,
+    private val assetRepositoryImpl: AssetRepository
 ) : ViewModel() {
     var asset: Asset? by mutableStateOf(null)
     var errorState by mutableStateOf(false)
@@ -30,18 +32,24 @@ class AssetDetailViewModel @Inject constructor(
         viewModelScope.launch {
             savedStateHandle.get<String>("assetKey")?.let { assetKey ->
                 asset = assetDao.getAsset(assetKey)
-                priceHistory = priceHistory + getPriceData()
+                getPriceData()
             }
         }
     }
 
-    private suspend fun getPriceData(): List<Double> {
-        asset?.let {
-            if (it.assetType == AssetType.STOCK) {
-                return assetRepositoryImpl.getStockPriceHistory(it)[0].c
+    private suspend fun getPriceData() {
+        runCatching {
+            asset?.let {
+                if (it.assetType == AssetType.STOCK) {
+                    priceHistory = assetServiceImpl.getStockPriceHistory(it).getOrThrow()[0].c
+                } else {
+                    throw (Exception("unable to get price history"))
+                }
             }
+        }.onFailure {
+            errorState = true
+            errorText = it.message.toString()
         }
-        return listOf()
     }
 
     fun dismissError() {
@@ -65,12 +73,15 @@ class AssetDetailViewModel @Inject constructor(
 
     fun updateAsset(updatedBalance: String) {
         viewModelScope.launch {
-            if (updatedBalance.matches(Regex("[0-9 ]+"))) {
-                asset?.let {
-                    assetDao.updateAssetBalance(updatedBalance, it.key)
-                    asset = assetDao.getAsset(it.key)
+            runCatching {
+                if (updatedBalance.matches(Regex("[0-9 .]+"))) {
+                    asset?.let {
+                        asset = assetRepositoryImpl.updateAssetBalance(updatedBalance, it.key)
+                    }
+                } else {
+                    throw(Exception())
                 }
-            } else {
+            }.onFailure {
                 errorState = true
                 errorText = "Unable to update value. Please enter a valid number"
             }

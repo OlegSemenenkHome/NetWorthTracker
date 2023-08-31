@@ -74,7 +74,6 @@ fun HomeScreenView(navController: NavController) {
             }
         }
     }
-
     DisposableEffect(lifecycle) {
         lifecycle.addObserver(lifecycleObserver)
         onDispose {
@@ -138,7 +137,7 @@ fun HomeScreenView(navController: NavController) {
                         .padding(10.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
-                        .padding(vertical = 30.dp)
+                        .padding(vertical = 20.dp)
                         .fillMaxWidth()
 
                 ) {

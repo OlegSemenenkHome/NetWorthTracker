@@ -8,10 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.networthtracker.data.AssetRepository
+import com.networthtracker.data.AssetService
 import com.networthtracker.data.ListAsset
+import com.networthtracker.data.repo.AssetRepository
 import com.networthtracker.data.room.Asset
-import com.networthtracker.data.room.AssetDao
 import com.networthtracker.data.room.AssetType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,8 +25,8 @@ private const val ONE_MINUTE_IN_MILLIS = 60_000L
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
-    private val assetDao: AssetDao,
-    private val assetRepositoryImpl: AssetRepository
+    private val assetServiceImpl: AssetService,
+    private val assetRepository: AssetRepository
 ) : ViewModel() {
     private var lastTimeUpdated = System.currentTimeMillis()
 
@@ -55,7 +55,7 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
 
             getRepoSupportedAssets()
-            assetDao.getAssets()
+            assetRepository.getUserAssets()
                 .flowOn(Dispatchers.IO)
                 .collect {
                     userAssetList.clear()
@@ -80,11 +80,7 @@ class HomeScreenViewModel @Inject constructor(
             runCatching {
                 filteredAssets.forEach {
                     if (it.name == name) {
-                        if (it.assetType == AssetType.STOCK) {
-                            addStockAsset(it)
-                        } else {
-                            addCryptoAsset(it)
-                        }
+                        assetRepository.addAsset(it)
                     }
                 }
             }.onFailure {
@@ -130,23 +126,11 @@ class HomeScreenViewModel @Inject constructor(
         return listAssets.filter { it.name.lowercase().startsWith(query.lowercase()) }
     }
 
-    private suspend fun addCryptoAsset(listAsset: ListAsset) {
-        val cryptoAsset = assetRepositoryImpl.getCryptoAsset(listAsset.id)
-        if (cryptoAsset !in userAssetList) {
-            assetDao.insertAsset(cryptoAsset)
-        }
-    }
-
-    private suspend fun addStockAsset(asset: ListAsset) {
-        val stockAsset = assetRepositoryImpl.stockLookup(asset)
-        if (stockAsset !in userAssetList) {
-            assetDao.insertAsset(stockAsset)
-        }
-    }
-
     private suspend fun getRepoSupportedAssets() {
         runCatching {
-            assetList = assetRepositoryImpl.getSupportedCryptoAssets() + assetRepositoryImpl.getAllStocks()
+            assetList =
+                assetServiceImpl.getSupportedCryptoAssets()
+                    .getOrThrow() + assetServiceImpl.getAllStocks().getOrThrow()
         }.onFailure {
             errorString = "Unable to update asset values"
             errorState = true
@@ -161,9 +145,9 @@ class HomeScreenViewModel @Inject constructor(
             viewModelScope.launch {
                 userAssetList.forEach { asset ->
                     asset.value = if (asset.assetType == AssetType.CRYPTO) {
-                        assetRepositoryImpl.getCryptoAsset(asset.apiName).value
+                        assetServiceImpl.getCryptoAsset(asset.apiName).getOrThrow().value
                     } else {
-                        assetRepositoryImpl.stockPriceLookup(asset).value
+                        assetServiceImpl.stockPriceUpdate(asset).getOrThrow().value
                     }
                 }
             }
