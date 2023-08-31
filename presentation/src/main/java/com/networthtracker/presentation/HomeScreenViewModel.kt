@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.networthtracker.data.AssetService
 import com.networthtracker.data.ListAsset
-import com.networthtracker.data.AssetRepository
+import com.networthtracker.data.repo.AssetRepository
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -147,7 +147,7 @@ class HomeScreenViewModel @Inject constructor(
                     asset.value = if (asset.assetType == AssetType.CRYPTO) {
                         assetServiceImpl.getCryptoAsset(asset.apiName).getOrThrow().value
                     } else {
-                        assetServiceImpl.stockPriceLookup(asset).getOrThrow().value
+                        assetServiceImpl.stockPriceUpdate(asset).getOrThrow().value
                     }
                 }
             }

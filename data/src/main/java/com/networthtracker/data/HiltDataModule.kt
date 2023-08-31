@@ -2,8 +2,12 @@ package com.networthtracker.data
 
 import android.content.Context
 import androidx.room.Room
+import com.networthtracker.data.repo.AssetRepository
+import com.networthtracker.data.repo.AssetRepositoryImpl
 import com.networthtracker.data.room.AssetDao
 import com.networthtracker.data.room.AssetDatabase
+import com.networthtracker.data.service.AssetServiceImpl
+import com.networthtracker.data.service.StockApi
 import dagger.Provides
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -51,12 +55,10 @@ object HiltDataModule {
     fun provideAssetService(
         stockApi: StockApi,
         cryptoApi: CryptoApi,
-        assetDao: AssetDao
     ): AssetService {
         return AssetServiceImpl(
             stockApi = stockApi,
             cryptoApi = cryptoApi,
-            assetDao = assetDao
         )
     }
 

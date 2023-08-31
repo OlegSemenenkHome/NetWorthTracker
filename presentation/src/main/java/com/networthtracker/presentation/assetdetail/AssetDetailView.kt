@@ -168,8 +168,8 @@ fun AssetDetailView(navController: NavHostController) {
                         fontSize = 25.sp
                     )
 
-                    if (!viewModel.priceHistory.isNullOrEmpty())
-                    PriceChart(viewModel.priceHistory)
+                    if (viewModel.priceHistory.isNotEmpty())
+                        PriceChart(viewModel.priceHistory)
                 }
             }
         }

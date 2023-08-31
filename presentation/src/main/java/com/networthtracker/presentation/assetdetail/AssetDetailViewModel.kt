@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.networthtracker.data.AssetService
-import com.networthtracker.data.AssetRepository
+import com.networthtracker.data.repo.AssetRepository
 import com.networthtracker.data.room.Asset
 import com.networthtracker.data.room.AssetDao
 import com.networthtracker.data.room.AssetType

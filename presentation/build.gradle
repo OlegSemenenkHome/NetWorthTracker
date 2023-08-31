@@ -79,16 +79,4 @@ dependencies {
 
     //Coil
     implementation(libs.coil.compose)
-
-    // Local unit tests
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.mockk)
-    testImplementation(libs.junit)
-
-    // Instrumentation tests
-    androidTestImplementation(libs.androidx.runner)
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.android.compiler)
 }
