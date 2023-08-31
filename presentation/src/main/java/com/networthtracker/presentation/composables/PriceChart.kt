@@ -42,6 +42,8 @@ internal fun PriceChart(
                     .height(300.dp)
                     .fillMaxWidth()
             ) {
+                val maxWidth = size.width - 50
+
                 val diff = yPoints.max() - yPoints.min()
                 val xModifier = (size.height / (diff))
                 val newY = ArrayList<Float>()
@@ -52,7 +54,17 @@ internal fun PriceChart(
                     newY.add(size.height - ((it - newYMin) * xModifier).toFloat())
                 }
 
-                val spacing = (size.width / (yPoints.size))
+                val spacingModifiers = if (yPoints.size < 500) {
+                    .25f
+                } else if (yPoints.size < 600) {
+                    .2f
+                } else if (yPoints.size < 1000) {
+                    .10f
+                } else {
+                    .12f
+                }
+
+                val spacing = (maxWidth / (yPoints.size)) - spacingModifiers
 
                 val normX = mutableListOf<Float>()
                 val normY = mutableListOf<Float>()
@@ -61,8 +73,6 @@ internal fun PriceChart(
                     for (i in newY.indices) {
                         val currentX =
                             (spacing + i * spacing) + 150
-                        //  println(spacing.toString() + " " + i.toString() + " " + currentX.toString() + " " + newY[i])
-
                         if (i == 0) {
                             moveTo(currentX, newY[i])
                         } else {
@@ -103,7 +113,7 @@ internal fun PriceChart(
                 drawLine(
                     color = Color.White,
                     start = Offset(150f, (maxY / 2f)),
-                    end = Offset(size.width, (maxY / 2f)),
+                    end = Offset(maxWidth, (maxY / 2f)),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 )
 
@@ -117,19 +127,20 @@ internal fun PriceChart(
                 drawLine(
                     color = Color.White,
                     start = Offset(150f, (maxY / 1.33f)),
-                    end = Offset(size.width, (maxY / 1.33f)),
+                    end = Offset(maxWidth, (maxY / 1.33f)),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 )
 
                 drawLine(
                     color = Color.White,
                     start = Offset(150f, (maxY / 4)),
-                    end = Offset(size.width, (maxY / 4)),
+                    end = Offset(maxWidth, (maxY / 4)),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 )
 
                 drawIntoCanvas {
-                    it.nativeCanvas.drawLine(150f, maxY, size.width, maxY, paint)
+                    it.nativeCanvas.drawLine(150f, maxY, maxWidth, maxY, paint)
+                    it.nativeCanvas.drawLine(maxWidth, 0f, maxWidth, maxY, paint)
 
                     it.nativeCanvas.drawText(
                         newYMin.toString(),

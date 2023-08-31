@@ -23,7 +23,6 @@ class AssetServiceImpl @Inject constructor(
             val response = cryptoApi.getSupportedCryptoAssets()
             val list = response.body()
             if (response.isSuccessful && list != null) {
-                println(list)
                 list
             } else {
                 throw Exception(

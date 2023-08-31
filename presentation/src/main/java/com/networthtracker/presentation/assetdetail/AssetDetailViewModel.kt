@@ -73,11 +73,15 @@ class AssetDetailViewModel @Inject constructor(
 
     fun updateAsset(updatedBalance: String) {
         viewModelScope.launch {
-            if (updatedBalance.matches(Regex("[0-9 ]+"))) {
-                asset?.let {
-                    asset = assetRepositoryImpl.updateAssetBalance(updatedBalance, it.key)
+            runCatching {
+                if (updatedBalance.matches(Regex("[0-9 .]+"))) {
+                    asset?.let {
+                        asset = assetRepositoryImpl.updateAssetBalance(updatedBalance, it.key)
+                    }
+                } else {
+                    throw(Exception())
                 }
-            } else {
+            }.onFailure {
                 errorState = true
                 errorText = "Unable to update value. Please enter a valid number"
             }
